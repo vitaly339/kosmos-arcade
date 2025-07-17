@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Velo Boss - Велосипеды и Ёлки в Твери</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <img src="https://via.placeholder.com/150x50?text=Velo+Boss+Logo" alt="Velo Boss Logo">
+            </div>
+            <nav>
+                <ul class="main-menu">
+                    <li><a href="#bicycles">Велосипеды</a></li>
+                    <li><a href="#firs-retail">Ёлки розница</a></li>
+                    <li><a href="#firs-wholesale">Опт</a></li>
+                    <li><a href="#promotions">Акции</a></li>
+                    <li><a href="#contacts">Контакты</a></li>
+                </ul>
+                <div class="mobile-menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </nav>
+            <div class="header-actions">
+                <a href="https://vk.com/velych69" target="_blank" class="vk-subscribe-btn">
+                    <i class="fab fa-vk"></i> Подписаться VK
+                </a>
+                <div class="vk-qr-code">
+                    <img src="https://via.placeholder.com/60x60?text=VK+QR" alt="VK QR Code">
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section id="hero" class="hero-section">
+            <div class="container">
+                <h1>Velo Boss - Ваш надежный партнер по велосипедам и ёлкам!</h1>
+                <p>Широкий ассортимент, выгодные цены, доставка по Твери и области.</p>
+                <a href="#bicycles" class="btn primary-btn">Выбрать велосипед</a>
+                <a href="#firs-retail" class="btn secondary-btn">Купить ёлку</a>
+            </div>
+        </section>
+
+        <section id="bicycles" class="catalog-section">
+            <div class="container">
+                <h2>Каталог Велосипедов</h2>
+                <div class="filters">
+                    <div class="filter-group">
+                        <label for="category-filter">Категория:</label>
+                        <select id="category-filter">
+                            <option value="all">Все</option>
+                            <option value="детский">Детский</option>
+                            <option value="подростковый">Подростковый</option>
+                            <option value="взрослый">Взрослый</option>
+                            <option value="складной">Складной</option>
+                            <option value="фэтбайк">Фэтбайк</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="wheel-size-filter">Колёса:</label>
+                        <select id="wheel-size-filter">
+                            <option value="all">Все</option>
+                            <option value="12">12"</option>
+                            <option value="16">16"</option>
+                            <option value="20">20"</option>
+                            <option value="24">24"</option>
+                            <option value="26">26"</option>
+                            <option value="27.5">27.5"</option>
+                            <option value="29">29"</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="height-filter">Рост:</label>
+                        <input type="range" id="height-filter" min="100" max="200" value="150" oninput="this.nextElementSibling.value=this.value + ' см'">
+                        <output>150 см</output>
+                    </div>
+                    <div class="filter-group">
+                        <label for="frame-filter">Рама:</label>
+                        <input type="text" id="frame-filter" placeholder="Материал рамы">
+                    </div>
+                    <div class="filter-group">
+                        <label for="price-filter">Цена до:</label>
+                        <input type="number" id="price-filter" min="0" value="50000">
+                    </div>
+                    <button class="btn reset-filters-btn">Сбросить фильтры</button>
+                </div>
+
+                <div class="product-grid" id="bicycle-products">
+                    <div class="product-card" data-category="детский" data-wheel="16" data-price="12000">
+                        <img src="https://via.placeholder.com/300x200?text=Детский+Велосипед" alt="Детский Велосипед">
+                        <h3>Детский Велосипед "Юниор"</h3>
+                        <p class="price">12 000 ₽</p>
+                        <button class="btn buy-one-click" data-product="Детский Велосипед 'Юниор'">Купить в 1 клик</button>
+                        <div class="promo-info">Рассрочка 0%</div>
+                    </div>
+                    <div class="product-card" data-category="взрослый" data-wheel="29" data-price="35000">
+                        <img src="https://via.placeholder.com/300x200?text=Горный+Велосипед" alt="Горный Велосипед">
+                        <h3>Горный Велосипед "Трасса"</h3>
+                        <p class="price">35 000 ₽</p>
+                        <button class="btn buy-one-click" data-product="Горный Велосипед 'Трасса'">Купить в 1 клик</button>
+                        <div class="promo-info">Участвуй в конкурсе!</div>
+                    </div>
+                    </div>
+            </div>
+        </section>
+
+        <section id="firs" class="catalog-section">
+            <div class="container">
+                <h2>Раздел Ёлок</h2>
+                <div class="tabs">
+                    <button class="tab-btn active" data-target="firs-retail">Розница</button>
+                    <button class="tab-btn" data-target="firs-wholesale">Опт</button>
+                </div>
+
+                <div id="firs-retail" class="tab-content active">
+                    <h3>Ёлки в розницу</h3>
+                    <div class="filters">
+                        <div class="filter-group">
+                            <label for="fir-height-retail">Высота до:</label>
+                            <input type="range" id="fir-height-retail" min="50" max="300" value="150" oninput="this.nextElementSibling.value=this.value + ' см'">
+                            <output>150 см</output>
+                        </div>
+                        <div class="filter-group">
+                            <label for="fir-material-retail">Материал:</label>
+                            <select id="fir-material-retail">
+                                <option value="all">Все</option>
+                                <option value="искусственная">Искусственная</option>
+                                <option value="живая">Живая (в сезон)</option>
+                            </select>
+                        </div>
+                        <button class="btn reset-filters-btn">Сбросить фильтры</button>
+                    </div>
+                    <div class="product-grid" id="fir-retail-products">
+                        <div class="product-card" data-height="180" data-material="искусственная" data-price="8000">
+                            <img src="https://via.placeholder.com/300x200?text=Ёлка+Искусственная" alt="Ёлка Искусственная">
+                            <h3>Ёлка "Пушистая" 1.8м</h3>
+                            <p class="price">8 000 ₽</p>
+                            <button class="btn buy-one-click" data-product="Ёлка 'Пушистая' 1.8м">Купить в 1 клик</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="firs-wholesale" class="tab-content">
+                    <h3>Ёлки оптом</h3>
+                    <p>Для оптовых покупателей предлагаем специальные условия и цены.</p>
+                    <div class="wholesale-calculator">
+                        <h4>Калькулятор опта</h4>
+                        <div class="form-group">
+                            <label for="wholesale-quantity">Количество ёлок:</label>
+                            <input type="number" id="wholesale-quantity" min="10" value="10">
+                        </div>
+                        <div class="form-group">
+                            <label for="wholesale-height">Средняя высота (см):</label>
+                            <input type="number" id="wholesale-height" min="100" value="150">
+                        </div>
+                        <div class="form-group">
+                            <label for="wholesale-material">Материал:</label>
+                            <select id="wholesale-material">
+                                <option value="искусственная">Искусственная</option>
+                                <option value="живая">Живая</option>
+                            </select>
+                        </div>
+                        <button class="btn primary-btn" id="calculate-wholesale">Рассчитать стоимость</button>
+                        <p class="wholesale-result">Примерная стоимость: <span id="wholesale-price">0</span> ₽</p>
+                    </div>
+                    <form class="order-form" id="wholesale-order-form">
+                        <h4>Оставить заявку на оптовый заказ</h4>
+                        <div class="form-group">
+                            <input type="text" name="name" placeholder="Ваше имя" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="tel" name="phone" placeholder="Ваш телефон" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" name="email" placeholder="Ваш Email">
+                        </div>
+                        <div class="form-group">
+                            <textarea name="message" placeholder="Дополнительная информация (например, необходимый объем, тип ёлок)"></textarea>
+                        </div>
+                        <button type="submit" class="btn primary-btn">Отправить заявку</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <section id="top-sales" class="top-sales-section">
+            <div class="container">
+                <h2>Топ Продаж</h2>
+                <div class="product-grid">
+                    <div class="product-card">
+                        <img src="https://via.placeholder.com/300x200?text=Топ+Продаж+Велосипед" alt="Топ Продаж Велосипед">
+                        <h3>Хит продаж: Городской Велосипед "Комфорт"</h3>
+                        <p class="price">28 000 ₽</p>
+                        <button class="btn buy-one-click" data-product="Хит продаж: Городской Велосипед 'Комфорт'">Купить в 1 клик</button>
+                    </div>
+                    <div class="product-card">
+                        <img src="https://via.placeholder.com/300x200?text=Топ+Продаж+Ёлка" alt="Топ Продаж Ёлка">
+                        <h3>Лучшая Ёлка: Искусственная "Премиум" 2.1м</h3>
+                        <p class="price">15 000 ₽</p>
+                        <button class="btn buy-one-click" data-product="Лучшая Ёлка: Искусственная 'Премиум' 2.1м">Купить в 1 клик</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="promotions" class="promotions-section">
+            <div class="container">
+                <h2>Новости и Акции <small>(из VK)</small></h2>
+                <div id="vk-posts-container">
+                    <p>Загрузка новостей...</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="reviews" class="reviews-section">
+            <div class="container">
+                <h2>Отзывы наших клиентов</h2>
+                <div class="review-grid">
+                    <div class="review-card">
+                        <p>"Отличный магазин! Купили сыну велосипед, очень довольны качеством и обслуживанием."</p>
+                        <p class="reviewer-name">- Анна С.</p>
+                    </div>
+                    <div class="review-card">
+                        <p>"Заказывали оптовую партию ёлок, все пришло вовремя и в лучшем виде. Рекомендую!"</p>
+                        <p class="reviewer-name">- ИП Петров</p>
+                    </div>
+                    </div>
+                <button class="btn primary-btn">Оставить отзыв</button>
+            </div>
+        </section>
+
+        <section id="order-form-section" class="order-form-section">
+            <div class="container">
+                <h2>Быстрый заказ</h2>
+                <form class="order-form" id="quick-order-form">
+                    <div class="form-group">
+                        <input type="text" name="name" placeholder="Ваше имя" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="tel" name="phone" placeholder="Ваш телефон" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" name="product" id="product-for-order" placeholder="Название товара (необязательно)">
+                    </div>
+                    <button type="submit" class="btn primary-btn">Отправить заказ</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-block">
+                    <h4>Контакты</h4>
+                    <p><i class="fas fa-map-marker-alt"></i> г. Тверь, ул. Скворцова-Степанова, д. 15, ТЦ Победа, 2 этаж, офис 20</p>
+                    <p><i class="fas fa-phone"></i> <a href="tel:+79610171727">+7 (961) 017-17-27</a></p>
+                    <p><i class="fas fa-clock"></i> График работы: Пн-Вс 10:00-19:00</p>
+                </div>
+                <div class="footer-block">
+                    <h4>Мы в соцсетях</h4>
+                    <p>
+                        <a href="https://vk.com/velych69" target="_blank"><i class="fab fa-vk"></i> Velo Boss VK</a>
+                    </p>
+                    <p>
+                        <a href="https://wa.me/79610171727" target="_blank"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+                    </p>
+                    <p>
+                        <a href="tg://resolve?phone=+79610171727" target="_blank"><i class="fab fa-telegram-plane"></i> Telegram</a>
+                    </p>
+                    <div class="footer-qr-code">
+                        <p>Наш VK QR:</p>
+                        <img src="https://via.placeholder.com/100x100?text=VK+QR" alt="VK QR Code">
+                    </div>
+                </div>
+            </div>
+            <div class="copyright">
+                &copy; 2025 Velo Boss. Все права защищены.
+            </div>
+        </div>
+    </footer>
+
+    <div id="modal-one-click" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Купить в 1 клик</h2>
+            <p>Вы выбрали: <strong id="modal-product-name"></strong></p>
+            <form class="order-form">
+                <div class="form-group">
+                    <input type="text" name="name" placeholder="Ваше имя" required>
+                </div>
+                <div class="form-group">
+                    <input type="tel" name="phone" placeholder="Ваш телефон" required>
+                </div>
+                <button type="submit" class="btn primary-btn">Заказать</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
