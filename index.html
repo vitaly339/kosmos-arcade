@@ -1,308 +1,407 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Велыч 69 - Велосипеды и Ёлки в Твери</title>
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#0b0f1a" />
+<title>Cosmo Arcade — Mobile</title>
+<style>
+  :root { --bg:#0b0f1a; --panel:#0f1628; --line:#1f2844; --btn:#1b2a4a; --btn-b:#33538d; }
+  html,body{margin:0;height:100%;background:var(--bg);color:#fff;font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial}
+  #wrap{display:flex;flex-direction:column;height:100dvh}
+  header{padding:8px 12px;background:var(--panel);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px}
+  header h1{font-size:16px;margin:0;opacity:.9}
+  #ui{margin-left:auto;display:flex;gap:6px;align-items:center}
+  #score{padding:6px 10px;background:#141e34;border:1px solid #263556;border-radius:8px;font-weight:700}
+  #boosts{opacity:.9;font-size:12px;max-width:40ch;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #stage{position:relative;flex:1;min-height:0}
+  #canvas{position:absolute;inset:0;display:block;width:100%;height:100%;touch-action:none}
+  #menu{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(5,8,14,.85)}
+  .card{background:#111a2e;border:1px solid #263556;border-radius:14px;padding:18px;max-width:440px;width:92%;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+  .card h2{margin:0 0 10px 0}
+  .btn{display:block;width:100%;padding:14px 16px;margin:8px 0;background:var(--btn);border:1px solid var(--btn-b);border-radius:12px;color:#fff;font-weight:700;text-align:center;text-decoration:none;cursor:pointer}
+  .row{display:flex;gap:8px}
+  .btn.small{flex:1;padding:10px}
+  /* Мобильные кнопки */
+  #touch{position:absolute;left:10px;right:10px;bottom:10px;display:flex;justify-content:space-between;gap:10px;pointer-events:none}
+  .pad{pointer-events:auto;display:flex;gap:10px;background:#0e1628cc;border:1px solid #2b3e68;border-radius:14px;padding:10px}
+  .pad button{min-width:64px;min-height:64px;border-radius:12px;border:1px solid #3b5ca0;background:#142348;color:#fff;font-weight:800;font-size:18px}
+  .pad button:active{filter:brightness(1.2)}
+  /* Прячем тач-пульт на десктопе */
+  @media (hover:hover) and (pointer:fine){ #touch{display:none} }
+  #hint{position:absolute;right:10px;bottom:10px;background:#0e1628cc;border:1px solid #2b3e68;border-radius:10px;padding:8px 10px;font-size:12px}
+</style>
 </head>
 <body>
-    <header>
-        <div class="container">
-            <div class="logo">
-                <img src="https://via.placeholder.com/150x50?text=Velo+Boss+Logo" alt="Velo Boss Logo">
-            </div>
-            <nav>
-                <ul class="main-menu">
-                    <li><a href="#bicycles">Велосипеды</a></li>
-                    <li><a href="#firs-retail">Ёлки розница</a></li>
-                    <li><a href="#firs-wholesale">Опт</a></li>
-                    <li><a href="#promotions">Акции</a></li>
-                    <li><a href="#contacts">Контакты</a></li>
-                </ul>
-                <div class="mobile-menu-toggle">
-                    <i class="fas fa-bars"></i>
-                </div>
-            </nav>
-            <div class="header-actions">
-                <a href="https://vk.com/velych69" target="_blank" class="vk-subscribe-btn">
-                    <i class="fab fa-vk"></i> Подписаться VK
-                </a>
-                <div class="vk-qr-code">
-                    <img src="https://via.placeholder.com/60x60?text=VK+QR" alt="VK QR Code">
-                </div>
-            </div>
+<div id="wrap">
+  <header>
+    <h1>Cosmo Arcade</h1>
+    <div id="ui">
+      <div id="score">0</div>
+      <div id="boosts"></div>
+      <button id="back" class="btn small" style="width:auto;padding:6px 10px;margin:0 0 0 8px">В меню</button>
+    </div>
+  </header>
+
+  <div id="stage">
+    <canvas id="canvas"></canvas>
+
+    <!-- Меню -->
+    <div id="menu">
+      <div class="card">
+        <h2>Выбери режим</h2>
+        <button class="btn" data-mode="worm">🐍 Worm Arena (как wormax.io)</button>
+        <button class="btn" data-mode="cat">🐱 Trampoline Cat (котёнок на батуте)</button>
+        <div class="row">
+          <div class="btn small" id="help">Управление</div>
+          <div class="btn small" id="install">Установить (PWA)</div>
         </div>
-    </header>
-
-    <main>
-        <section id="hero" class="hero-section">
-            <div class="container">
-                <h1>Велыч 69 - Ваш надежный партнер по велосипедам и ёлкам!</h1>
-                <p>Широкий ассортимент, выгодные цены, доставка по Твери и области.</p>
-                <a href="#bicycles" class="btn primary-btn">Выбрать велосипед</a>
-                <a href="#firs-retail" class="btn secondary-btn">Купить ёлку</a>
-            </div>
-        </section>
-
-        <section id="bicycles" class="catalog-section">
-            <div class="container">
-                <h2>Каталог Велосипедов</h2>
-                <div class="filters">
-                    <div class="filter-group">
-                        <label for="category-filter">Категория:</label>
-                        <select id="category-filter">
-                            <option value="all">Все</option>
-                            <option value="детский">Детский</option>
-                            <option value="подростковый">Подростковый</option>
-                            <option value="взрослый">Взрослый</option>
-                            <option value="складной">Складной</option>
-                            <option value="фэтбайк">Фэтбайк</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label for="wheel-size-filter">Колёса:</label>
-                        <select id="wheel-size-filter">
-                            <option value="all">Все</option>
-                            <option value="12">12"</option>
-                            <option value="16">16"</option>
-                            <option value="20">20"</option>
-                            <option value="24">24"</option>
-                            <option value="26">26"</option>
-                            <option value="27.5">27.5"</option>
-                            <option value="29">29"</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label for="height-filter">Рост:</label>
-                        <input type="range" id="height-filter" min="100" max="200" value="150" oninput="this.nextElementSibling.value=this.value + ' см'">
-                        <output>150 см</output>
-                    </div>
-                    <div class="filter-group">
-                        <label for="frame-filter">Рама:</label>
-                        <input type="text" id="frame-filter" placeholder="Материал рамы">
-                    </div>
-                    <div class="filter-group">
-                        <label for="price-filter">Цена до:</label>
-                        <input type="number" id="price-filter" min="0" value="50000">
-                    </div>
-                    <button class="btn reset-filters-btn">Сбросить фильтры</button>
-                </div>
-
-                <div class="product-grid" id="bicycle-products">
-                    <div class="product-card" data-category="детский" data-wheel="16" data-price="12000">
-                        <img src="https://via.placeholder.com/300x200?text=Детский+Велосипед" alt="Детский Велосипед">
-                        <h3>Детский Велосипед "Юниор"</h3>
-                        <p class="price">12 000 ₽</p>
-                        <button class="btn buy-one-click" data-product="Детский Велосипед 'Юниор'">Купить в 1 клик</button>
-                        <div class="promo-info">Рассрочка 0%</div>
-                    </div>
-                    <div class="product-card" data-category="взрослый" data-wheel="29" data-price="35000">
-                        <img src="https://via.placeholder.com/300x200?text=Горный+Велосипед" alt="Горный Велосипед">
-                        <h3>Горный Велосипед "Трасса"</h3>
-                        <p class="price">35 000 ₽</p>
-                        <button class="btn buy-one-click" data-product="Горный Велосипед 'Трасса'">Купить в 1 клик</button>
-                        <div class="promo-info">Участвуй в конкурсе!</div>
-                    </div>
-                    </div>
-            </div>
-        </section>
-
-        <section id="firs" class="catalog-section">
-            <div class="container">
-                <h2>Раздел Ёлок</h2>
-                <div class="tabs">
-                    <button class="tab-btn active" data-target="firs-retail">Розница</button>
-                    <button class="tab-btn" data-target="firs-wholesale">Опт</button>
-                </div>
-
-                <div id="firs-retail" class="tab-content active">
-                    <h3>Ёлки в розницу</h3>
-                    <div class="filters">
-                        <div class="filter-group">
-                            <label for="fir-height-retail">Высота до:</label>
-                            <input type="range" id="fir-height-retail" min="50" max="300" value="150" oninput="this.nextElementSibling.value=this.value + ' см'">
-                            <output>150 см</output>
-                        </div>
-                        <div class="filter-group">
-                            <label for="fir-material-retail">Материал:</label>
-                            <select id="fir-material-retail">
-                                <option value="all">Все</option>
-                                <option value="искусственная">Искусственная</option>
-                                <option value="живая">Живая (в сезон)</option>
-                            </select>
-                        </div>
-                        <button class="btn reset-filters-btn">Сбросить фильтры</button>
-                    </div>
-                    <div class="product-grid" id="fir-retail-products">
-                        <div class="product-card" data-height="180" data-material="искусственная" data-price="8000">
-                            <img src="https://via.placeholder.com/300x200?text=Ёлка+Искусственная" alt="Ёлка Искусственная">
-                            <h3>Ёлка "Пушистая" 1.8м</h3>
-                            <p class="price">8 000 ₽</p>
-                            <button class="btn buy-one-click" data-product="Ёлка 'Пушистая' 1.8м">Купить в 1 клик</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="firs-wholesale" class="tab-content">
-                    <h3>Ёлки оптом</h3>
-                    <p>Для оптовых покупателей предлагаем специальные условия и цены.</p>
-                    <div class="wholesale-calculator">
-                        <h4>Калькулятор опта</h4>
-                        <div class="form-group">
-                            <label for="wholesale-quantity">Количество ёлок:</label>
-                            <input type="number" id="wholesale-quantity" min="10" value="10">
-                        </div>
-                        <div class="form-group">
-                            <label for="wholesale-height">Средняя высота (см):</label>
-                            <input type="number" id="wholesale-height" min="100" value="150">
-                        </div>
-                        <div class="form-group">
-                            <label for="wholesale-material">Материал:</label>
-                            <select id="wholesale-material">
-                                <option value="искусственная">Искусственная</option>
-                                <option value="живая">Живая</option>
-                            </select>
-                        </div>
-                        <button class="btn primary-btn" id="calculate-wholesale">Рассчитать стоимость</button>
-                        <p class="wholesale-result">Примерная стоимость: <span id="wholesale-price">0</span> ₽</p>
-                    </div>
-                    <form class="order-form" id="wholesale-order-form">
-                        <h4>Оставить заявку на оптовый заказ</h4>
-                        <div class="form-group">
-                            <input type="text" name="name" placeholder="Ваше имя" required>
-                        </div>
-                        <div class="form-group">
-                            <input type="tel" name="phone" placeholder="Ваш телефон" required>
-                        </div>
-                        <div class="form-group">
-                            <input type="email" name="email" placeholder="Ваш Email">
-                        </div>
-                        <div class="form-group">
-                            <textarea name="message" placeholder="Дополнительная информация (например, необходимый объем, тип ёлок)"></textarea>
-                        </div>
-                        <button type="submit" class="btn primary-btn">Отправить заявку</button>
-                    </form>
-                </div>
-            </div>
-        </section>
-
-        <section id="top-sales" class="top-sales-section">
-            <div class="container">
-                <h2>Топ Продаж</h2>
-                <div class="product-grid">
-                    <div class="product-card">
-                        <img src="https://via.placeholder.com/300x200?text=Топ+Продаж+Велосипед" alt="Топ Продаж Велосипед">
-                        <h3>Хит продаж: Городской Велосипед "Комфорт"</h3>
-                        <p class="price">28 000 ₽</p>
-                        <button class="btn buy-one-click" data-product="Хит продаж: Городской Велосипед 'Комфорт'">Купить в 1 клик</button>
-                    </div>
-                    <div class="product-card">
-                        <img src="https://via.placeholder.com/300x200?text=Топ+Продаж+Ёлка" alt="Топ Продаж Ёлка">
-                        <h3>Лучшая Ёлка: Искусственная "Премиум" 2.1м</h3>
-                        <p class="price">15 000 ₽</p>
-                        <button class="btn buy-one-click" data-product="Лучшая Ёлка: Искусственная 'Премиум' 2.1м">Купить в 1 клик</button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="promotions" class="promotions-section">
-            <div class="container">
-                <h2>Новости и Акции <small>(из VK)</small></h2>
-                <div id="vk-posts-container">
-                    <p>Загрузка новостей...</p>
-                </div>
-            </div>
-        </section>
-
-        <section id="reviews" class="reviews-section">
-            <div class="container">
-                <h2>Отзывы наших клиентов</h2>
-                <div class="review-grid">
-                    <div class="review-card">
-                        <p>"Отличный магазин! Купили сыну велосипед, очень довольны качеством и обслуживанием."</p>
-                        <p class="reviewer-name">- Анна С.</p>
-                    </div>
-                    <div class="review-card">
-                        <p>"Заказывали оптовую партию ёлок, все пришло вовремя и в лучшем виде. Рекомендую!"</p>
-                        <p class="reviewer-name">- ИП Петров</p>
-                    </div>
-                    </div>
-                <button class="btn primary-btn">Оставить отзыв</button>
-            </div>
-        </section>
-
-        <section id="order-form-section" class="order-form-section">
-            <div class="container">
-                <h2>Быстрый заказ</h2>
-                <form class="order-form" id="quick-order-form">
-                    <div class="form-group">
-                        <input type="text" name="name" placeholder="Ваше имя" required>
-                    </div>
-                    <div class="form-group">
-                        <input type="tel" name="phone" placeholder="Ваш телефон" required>
-                    </div>
-                    <div class="form-group">
-                        <input type="text" name="product" id="product-for-order" placeholder="Название товара (необязательно)">
-                    </div>
-                    <button type="submit" class="btn primary-btn">Отправить заказ</button>
-                </form>
-            </div>
-        </section>
-    </main>
-
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-block">
-                    <h4>Контакты</h4>
-                    <p><i class="fas fa-map-marker-alt"></i> г. Тверь, ул. Скворцова-Степанова, д. 15, ТЦ Победа, 2 этаж, офис 20</p>
-                    <p><i class="fas fa-phone"></i> <a href="tel:+79610171727">+7 (961) 017-17-27</a></p>
-                    <p><i class="fas fa-clock"></i> График работы: Пн-Вс 10:00-19:00</p>
-                </div>
-                <div class="footer-block">
-                    <h4>Мы в соцсетях</h4>
-                    <p>
-                        <a href="https://vk.com/velych69" target="_blank"><i class="fab fa-vk"></i> Velo Boss VK</a>
-                    </p>
-                    <p>
-                        <a href="https://wa.me/79610171727" target="_blank"><i class="fab fa-whatsapp"></i> WhatsApp</a>
-                    </p>
-                    <p>
-                        <a href="tg://resolve?phone=+79610171727" target="_blank"><i class="fab fa-telegram-plane"></i> Telegram</a>
-                    </p>
-                    <div class="footer-qr-code">
-                        <p>Наш VK QR:</p>
-                        <img src="https://via.placeholder.com/100x100?text=VK+QR" alt="VK QR Code">
-                    </div>
-                </div>
-            </div>
-            <div class="copyright">
-                &copy; 2025 Velo Boss. Все права защищены.
-            </div>
-        </div>
-    </footer>
-
-    <div id="modal-one-click" class="modal">
-        <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <h2>Купить в 1 клик</h2>
-            <p>Вы выбрали: <strong id="modal-product-name"></strong></p>
-            <form class="order-form">
-                <div class="form-group">
-                    <input type="text" name="name" placeholder="Ваше имя" required>
-                </div>
-                <div class="form-group">
-                    <input type="tel" name="phone" placeholder="Ваш телефон" required>
-                </div>
-                <button type="submit" class="btn primary-btn">Заказать</button>
-            </form>
-        </div>
+        <p style="opacity:.8;font-size:12px;margin:8px 0 0 0">
+          Бонусы: ⚡ скорость, 🧲 магнит, 🛡️ щит, ✖2 очки
+        </p>
+      </div>
     </div>
 
-    <script src="script.js"></script>
+    <!-- Тач-управление -->
+    <div id="touch">
+      <div class="pad" id="leftPad">
+        <button id="left" aria-label="left">←</button>
+        <button id="right" aria-label="right">→</button>
+      </div>
+      <div class="pad" id="rightPad">
+        <button id="jump" aria-label="jump">⤴︎</button>
+      </div>
+    </div>
+
+    <div id="hint"></div>
+  </div>
+</div>
+
+<script>
+(() => {
+  // -------------------- Базовая настройка канваса с DPI --------------------
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true });
+  const menu = document.getElementById('menu');
+  const scoreEl = document.getElementById('score');
+  const boostsEl = document.getElementById('boosts');
+  const backBtn = document.getElementById('back');
+  const hint = document.getElementById('hint');
+
+  // Блокируем скролл/зум во время игры (iOS/Android)
+  ['touchstart','touchmove','gesturestart'].forEach(evt=>{
+    document.addEventListener(evt, e => {
+      if (e.target.closest('#canvas') || e.target.closest('#touch')) e.preventDefault();
+    }, { passive: false });
+  });
+
+  function resize() {
+    const r = Math.max(1, Math.min(window.devicePixelRatio || 1, 3));
+    const w = canvas.clientWidth = canvas.parentElement.clientWidth;
+    const h = canvas.clientHeight = canvas.parentElement.clientHeight;
+    canvas.width = Math.floor(w * r);
+    canvas.height = Math.floor(h * r);
+    ctx.setTransform(r, 0, 0, r, 0, 0);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  // -------------------- Вспомогательные --------------------
+  const kb = { left:false, right:false, space:false };
+  const touch = { left:false, right:false, jump:false };
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+  // Тач-кнопки (pointer работает на iOS/Android)
+  const btnLeft = document.getElementById('left');
+  const btnRight = document.getElementById('right');
+  const btnJump = document.getElementById('jump');
+  const ptrOn = (el, down, up) => {
+    el.addEventListener('pointerdown', () => { down(); el.setPointerCapture?.(event.pointerId); });
+    el.addEventListener('pointerup',   () => { up(); });
+    el.addEventListener('pointercancel',() => { up(); });
+    el.addEventListener('pointerleave', () => { up(); });
+  };
+  ptrOn(btnLeft,  ()=>touch.left=true,  ()=>touch.left=false);
+  ptrOn(btnRight, ()=>touch.right=true, ()=>touch.right=false);
+  ptrOn(btnJump,  ()=>touch.jump=true,  ()=>touch.jump=false);
+
+  // Клавиатура (для десктопа)
+  window.addEventListener('keydown', e => {
+    const k = e.key.toLowerCase();
+    if (k === 'arrowleft' || k === 'a') kb.left = true;
+    if (k === 'arrowright' || k === 'd') kb.right = true;
+    if (k === ' ') kb.space = true;
+    if (k === 'escape') showMenu();
+  });
+  window.addEventListener('keyup', e => {
+    const k = e.key.toLowerCase();
+    if (k === 'arrowleft' || k === 'a') kb.left = false;
+    if (k === 'arrowright' || k === 'd') kb.right = false;
+    if (k === ' ') kb.space = false;
+  });
+
+  // Подсказки
+  document.getElementById('help').onclick = () => {
+    hint.textContent = isMobile
+      ? 'Мобила: ← → и ⤴︎. Меню — кнопка сверху.'
+      : 'ПК: Worm ←/→ поворот; Cat ←/→ и Space. Esc — меню.';
+    setTimeout(()=> hint.textContent='', 3500);
+  };
+
+  // -------------------- HUD/бусты --------------------
+  let score = 0;
+  const boosts = {}; // key -> timeLeft
+  const hasBoost = k => (boosts[k]||0) > 0;
+  const addBoost = (k, secs) => { boosts[k]=(boosts[k]||0)+secs; updateHud(); };
+  const scoreMul = () => hasBoost('x2') ? 2 : 1;
+
+  function updateHud(){
+    scoreEl.textContent = Math.round(score);
+    const list = Object.entries(boosts).map(([k,v])=> `${k}:${v.toFixed(0)}s`).join('  ');
+    boostsEl.textContent = list;
+  }
+  function tickBoosts(dt){
+    let changed = false;
+    for (const k in boosts){ boosts[k]-=dt; if (boosts[k]<=0){ delete boosts[k]; changed=true; } }
+    if (changed) updateHud();
+  }
+  function resetHud(){
+    score = 0;
+    for (const k in boosts) delete boosts[k];
+    updateHud();
+  }
+
+  // -------------------- Игровые состояния --------------------
+  let state = 'menu'; // menu | worm | cat
+  function showMenu(){ state='menu'; menu.style.display='flex'; }
+  function hideMenu(){ menu.style.display='none'; }
+
+  document.querySelectorAll('[data-mode]').forEach(btn=>{
+    btn.onclick = () => {
+      if (btn.dataset.mode === 'worm'){ startWorm(); state='worm'; }
+      else { startCat(); state='cat'; }
+      hideMenu();
+    };
+  });
+  document.getElementById('back').onclick = showMenu;
+
+  // -------------------- Worm Arena --------------------
+  let worm, foods=[], stars=[];
+  function startWorm(){
+    resetHud();
+    const W = canvas.clientWidth, H = canvas.clientHeight;
+    worm = { x:W/2, y:H/2, angle:-Math.PI/2, speed: Math.min(W,H)*0.18, turn: 2.6, trail:[], segments:12, step:4 };
+    foods = []; stars = [];
+    const foodCount = Math.round((W*H)/9000); // адаптация под экран
+    for(let i=0;i<foodCount;i++) foods.push({x:Math.random()*W, y:Math.random()*H});
+    for(let i=0;i<4;i++) stars.push({x:Math.random()*W, y:Math.random()*H, type:['speed','magnet','x2','shield'][i%4]});
+  }
+  function updateWorm(dt){
+    const left = kb.left || touch.left, right = kb.right || touch.right;
+    if (left)  worm.angle -= worm.turn * dt;
+    if (right) worm.angle += worm.turn * dt;
+    const spd = worm.speed * (hasBoost('speed')?1.5:1);
+    worm.x += Math.cos(worm.angle)*spd*dt;
+    worm.y += Math.sin(worm.angle)*spd*dt;
+    const W = canvas.clientWidth, H = canvas.clientHeight;
+    if (worm.x<0) worm.x+=W; if (worm.x>W) worm.x-=W;
+    if (worm.y<0) worm.y+=H; if (worm.y>H) worm.y-=H;
+    worm.trail.unshift({x:worm.x,y:worm.y});
+    if (worm.trail.length > 1200) worm.trail.pop();
+
+    // Магнит к еде
+    if (hasBoost('magnet')){
+      for (const f of foods){
+        const dx = worm.x - f.x, dy = worm.y - f.y, d = Math.hypot(dx,dy);
+        if (d < 140){ f.x += dx/d * 100*dt; f.y += dy/d * 100*dt; }
+      }
+    }
+    // Съедаем еду
+    for (let i=foods.length-1;i>=0;i--){
+      const f = foods[i];
+      if (Math.hypot(f.x-worm.x, f.y-worm.y) < 12){
+        foods.splice(i,1);
+        score += 5 * scoreMul(); updateHud();
+        worm.segments = Math.min(80, worm.segments+1);
+        foods.push({x:Math.random()*W, y:Math.random()*H});
+      }
+    }
+    // Подбор бустов
+    for (let i=stars.length-1;i>=0;i--){
+      const b = stars[i];
+      if (Math.hypot(b.x-worm.x, b.y-worm.y) < 16){
+        stars.splice(i,1);
+        addBoost(b.type==='x2'?'x2':b.type, 8);
+        setTimeout(()=> stars.push({x:Math.random()*W, y:Math.random()*H, type:['speed','magnet','x2','shield'][Math.floor(Math.random()*4)]}), 1500);
+      }
+    }
+  }
+  function drawWorm(){
+    const W = canvas.clientWidth, H = canvas.clientHeight;
+    // фон
+    ctx.fillStyle = '#0a0e19'; ctx.fillRect(0,0,W,H);
+    // звезды-фон
+    ctx.save(); ctx.globalAlpha=.6;
+    for(let i=0;i<120;i++){ const x=(i*97)%W; const y=(i*53)%H; ctx.fillStyle=i%7===0?'#7dd3ff':'#cbd5e1'; ctx.fillRect(x,y,2,2); }
+    ctx.restore();
+    // еда
+    ctx.fillStyle='#63c8ff';
+    foods.forEach(f=>{ ctx.beginPath(); ctx.arc(f.x,f.y,3.5,0,Math.PI*2); ctx.fill(); });
+    // бусты
+    stars.forEach(b=> drawStar(b.x,b.y,9,b.type));
+    // тело
+    const step = worm.step;
+    for(let s=0;s<worm.segments;s++){
+      const idx = s*step; const p = worm.trail[idx] || worm.trail[worm.trail.length-1] || worm;
+      const r = Math.max(3, 9 - s*0.09);
+      ctx.beginPath(); ctx.fillStyle = s===0 ? '#ffd166' : '#f9a825';
+      ctx.arc(p.x,p.y,r,0,Math.PI*2); ctx.fill();
+    }
+  }
+
+  // -------------------- Trampoline Cat --------------------
+  let cat, tramps=[], camY=0, maxY=0, catStars=[];
+  function startCat(){
+    resetHud();
+    const W = canvas.clientWidth;
+    cat = { x:W/2, y:200, vx:0, vy:0, onGround:false };
+    tramps = []; catStars = []; camY=0; maxY=0;
+    for(let i=0;i<14;i++) addTramp(i===0 ? 230 : null);
+    for(let i=0;i<3;i++) spawnCatBoost(Math.random()*600+200);
+  }
+  function addTramp(constY=null){
+    const W = canvas.clientWidth;
+    const gapY = 90 + Math.random()*90;
+    const newY = constY!==null ? constY : (tramps.length ? tramps[tramps.length-1].y - gapY : 230);
+    const x = 60 + Math.random()*(W-120);
+    tramps.push({x, y:newY, w:Math.max(100, Math.min(180, W*0.25)), h:16, bouncy: 13+Math.random()*4});
+  }
+  function spawnCatBoost(y){
+    const W = canvas.clientWidth;
+    catStars.push({x: 60+Math.random()*(W-120), y: y-(Math.random()*200), r:10, type: ['speed','magnet','x2'][Math.floor(Math.random()*3)]});
+  }
+  function updateCat(dt){
+    const W = canvas.clientWidth, H = canvas.clientHeight;
+    const left = kb.left || touch.left, right = kb.right || touch.right, jump = kb.space || touch.jump;
+    const move = (right?1:0) - (left?1:0);
+    const moveSpeed = hasBoost('speed') ? 240 : 180;
+    cat.vx = move * moveSpeed;
+    // физика
+    cat.vy += 520*dt;
+    cat.x += cat.vx*dt;
+    cat.y += cat.vy*dt;
+    // стены
+    cat.x = Math.max(16, Math.min(W-16, cat.x));
+    // платформы
+    cat.onGround = false;
+    for (const t of tramps){
+      if (cat.vy > 0 && cat.y+8 >= t.y && cat.y+8 <= t.y+t.h && cat.x > t.x && cat.x < t.x+t.w){
+        cat.y = t.y-8; cat.vy = -t.bouncy; cat.onGround = true; score += 1*scoreMul(); updateHud();
+      }
+    }
+    // ручной прыжок
+    if (jump && cat.onGround){ cat.vy = -(hasBoost('speed') ? 18 : 14); }
+    // камера
+    if (cat.y < maxY) maxY = cat.y;
+    camY = Math.min(0, -maxY + H*0.28);
+    // спавн новых
+    const highest = tramps.reduce((m,t)=> Math.min(m,t.y), tramps[0]?.y||0);
+    while (highest - camY > -H*1.2 && tramps.length < 36) addTramp();
+    // рециклинг
+    for (let i=tramps.length-1;i>=0;i--){
+      if (tramps[i].y - camY > H+100){
+        tramps.splice(i,1);
+        addTramp(tramps.reduce((m,t)=>Math.min(m,t.y),9999) - (90+Math.random()*90));
+        spawnCatBoost(tramps.reduce((m,t)=>Math.min(m,t.y),9999) - 100);
+      }
+    }
+    // бусты
+    for (let i=catStars.length-1;i>=0;i--){
+      const b = catStars[i];
+      let dx = b.x - cat.x, dy = (b.y - camY) - cat.y;
+      if (hasBoost('magnet')){
+        const d = Math.hypot(dx,dy); if (d < 160){ b.x -= dx/d * 140*dt; b.y -= dy/d * 140*dt; }
+      }
+      if (Math.hypot(dx,dy) < 16){ catStars.splice(i,1); addBoost(b.type, 8); }
+    }
+    // фейл
+    if (cat.y - camY > H + 80){ showMenu(); }
+  }
+  function drawCat(){
+    const W = canvas.clientWidth, H = canvas.clientHeight;
+    // фон
+    ctx.fillStyle='#0a0e19'; ctx.fillRect(0,0,W,H);
+    // звёздная подложка
+    ctx.save(); ctx.globalAlpha=.6;
+    for(let i=0;i<120;i++){ const x=(i*97)%W; const y=((i*53)%H) + (camY*.2 % H); ctx.fillStyle=i%7===0?'#7dd3ff':'#cbd5e1'; ctx.fillRect(x,y,2,2); }
+    ctx.restore();
+    // бусты
+    catStars.forEach(b => drawStar(b.x, b.y - camY, 10, b.type));
+    // батуты
+    ctx.fillStyle='#7cf0d0'; ctx.strokeStyle='rgba(0,0,0,.22)';
+    tramps.forEach(t=>{ roundRect(t.x, t.y - camY, t.w, t.h, 8); ctx.fill(); ctx.stroke(); });
+    // котик
+    drawCatAstronaut(cat.x, cat.y - camY);
+  }
+
+  // -------------------- Рендер-утилиты --------------------
+  function drawStar(x,y,r,type){
+    ctx.save(); ctx.translate(x,y); ctx.rotate(performance.now()/800);
+    ctx.beginPath();
+    for(let i=0;i<10;i++){ const ang=i*Math.PI/5; const rr=(i%2===0? r : r*0.45); ctx.lineTo(Math.cos(ang)*rr, Math.sin(ang)*rr); }
+    ctx.closePath();
+    ctx.fillStyle = type==='speed'?'#ffd166': type==='magnet'?'#7dd3fc': type==='shield'?'#a5b4fc':'#f9a8d4';
+    ctx.fill(); ctx.restore();
+  }
+  function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+  function drawCatAstronaut(x,y){
+    ctx.save(); ctx.translate(x,y);
+    ctx.fillStyle = '#f59e0b'; roundRect(-11,-6,22,24,6); ctx.fill(); // тело
+    ctx.beginPath(); ctx.fillStyle='#fda4af'; ctx.arc(0,-16,11,0,Math.PI*2); ctx.fill(); // голова
+    // ушки
+    ctx.beginPath(); ctx.moveTo(-7,-22); ctx.lineTo(-2,-30); ctx.lineTo(3,-22); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(7,-22); ctx.lineTo(2,-30); ctx.lineTo(-3,-22); ctx.closePath(); ctx.fill();
+    // глаза
+    ctx.fillStyle='#111'; ctx.beginPath(); ctx.arc(-3,-17,2,0,Math.PI*2); ctx.arc(3,-17,2,0,Math.PI*2); ctx.fill();
+    // стекло
+    ctx.beginPath(); ctx.strokeStyle='rgba(173,216,230,.85)'; ctx.lineWidth=3; ctx.arc(0,-16,14,0,Math.PI*2); ctx.stroke();
+    ctx.restore();
+  }
+
+  // -------------------- Главный цикл + пауза --------------------
+  let last = performance.now(), paused = false;
+  function loop(now){
+    const dt = Math.min(0.033, (now - last)/1000); last = now;
+    if (!paused){
+      if (state === 'worm'){ updateWorm(dt); tickBoosts(dt); drawWorm(); }
+      else if (state === 'cat'){ updateCat(dt); tickBoosts(dt); drawCat(); }
+      else { // меню фон
+        const W = canvas.clientWidth, H = canvas.clientHeight;
+        ctx.fillStyle='#0a0e19'; ctx.fillRect(0,0,W,H);
+        ctx.save(); ctx.globalAlpha=.5;
+        for(let i=0;i<100;i++){ const x=(i*73)%W; const y=(i*41)%H; ctx.fillStyle=i%9===0?'#7dd3ff':'#cbd5e1'; ctx.fillRect(x,y,2,2); }
+        ctx.restore();
+      }
+    }
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+  document.addEventListener('visibilitychange', ()=> paused = document.hidden);
+
+  // -------------------- PWA установка --------------------
+  let deferredPrompt;
+  window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
+  document.getElementById('install').onclick = async () => {
+    if (!deferredPrompt){ hint.textContent='Если кнопки нет — добавь на экран Домой из меню браузера.'; setTimeout(()=>hint.textContent='',3000); return; }
+    deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; deferredPrompt = null;
+  };
+
+  // Старт с меню
+  showMenu();
+})();
+</script>
 </body>
 </html>
