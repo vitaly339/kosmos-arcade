@@ -8,14 +8,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./style.css?v=3" />
+  <link rel="stylesheet" href="./style.css?v=4" />
 </head>
 <body>
   <div class="bg-decor"></div>
   <header class="topbar">
     <div class="brand">
       <span class="brand__spark">✦</span>
-      <span class="brand__title">Kosmos.<span>Worm</span></span>
+      <span class="brand__title">Kosmos.<span>Arcade</span></span>
     </div>
     <nav class="top-actions">
       <button class="chip" id="score-chip">0</button>
@@ -30,9 +30,8 @@
     <section class="hero__copy">
       <h1 class="glow">Выбирай&nbsp;режим</h1>
       <p class="subtitle">
-        <strong>Worm</strong>: плавающий джойстик, ускорение, фрукты, бомбы, боты, камера по карте.
-        <br />
-        <strong>Cat</strong>: движение по джойстику, отскоки — без кнопки прыжка.
+        <strong>Worm</strong>: классическая змейка с ботами, едой и ростом.<br />
+        <strong>Cat</strong>: весёлый котик-шарик с ушками, отскакивающий от стен.
       </p>
 
       <div class="mode-buttons">
@@ -53,7 +52,7 @@
                    ./assets/kosmos-worm-512.webp 512w,
                    ./assets/kosmos-worm-1024.webp 1024w"
            sizes="(max-width: 600px) 70vw, 420px"
-           alt="Змейка Kosmos.Worm" loading="eager" decoding="async" />
+           alt="Kosmos.Worm" loading="eager" decoding="async" />
       <div class="shine"></div>
     </figure>
   </main>
@@ -62,15 +61,21 @@
     <span>made by kosmos.bud 2k25</span>
   </footer>
 
-  <!-- Подключение логики меню -->
-  <script src="./script.js?v=3"></script>
-  <!-- Подключение самой игры -->
-  <script src="./game.v3.js?v=3"></script>
+  <!-- Меню и логика -->
+  <script src="./script.js?v=4"></script>
 
-  <!-- Фолбэк -->
+  <!-- Игры -->
+  <script src="./game.v3.js?v=4"></script>
+  <script src="./game.cat.js?v=1"></script>
+
+  <!-- Фолбэк: прямой запуск -->
   <script>
     document.getElementById('btn-worm')?.addEventListener('click', ()=>window.__worm?.start?.());
-    document.getElementById('btn-menu')?.addEventListener('click', ()=>window.__worm?.stop?.());
+    document.getElementById('btn-cat')?.addEventListener('click', ()=>window.__cat?.start?.());
+    document.getElementById('btn-menu')?.addEventListener('click', ()=>{
+      window.__worm?.stop?.();
+      window.__cat?.stop?.();
+    });
   </script>
 </body>
 </html>
