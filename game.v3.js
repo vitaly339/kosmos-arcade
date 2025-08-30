@@ -4,15 +4,14 @@
    • Голова в любую часть другой змеи → смерть, из трупа падает еда.
    • Авто-масштаб камеры (мобилка/ПК).
 */
-
 (function(){
   const CFG = {
     worldSize: 2600,
     baseSpeed: 2.25,
     turnRate: 0.10,
     segSpacing: 8,
-    initLen: 28,          // базовая длина (чтобы не была «палочкой»)
-    snakeRadius: 12,      // потолще как в io-играх
+    initLen: 28,          // 👈 базовая длина (минимум сегментов)
+    snakeRadius: 12,      // толщина «трубы»
     foodRadius: 4,
     bots: 4,
     growthPerFood: 6,
@@ -21,19 +20,18 @@
     bgHex: true
   };
 
-  // ── helpers
+  // helpers
   const rand = (a,b)=>a + Math.random()*(b-a);
   const clamp = (v,a,b)=>Math.max(a, Math.min(b, v));
   const dist2 = (a,b)=>{ const dx=a.x-b.x, dy=a.y-b.y; return dx*dx+dy*dy; };
   const lerpAngle=(a,b,t)=>{ let d=((b-a+Math.PI*3)%(Math.PI*2))-Math.PI; return a+d*t; };
 
-  // ── state
+  // state
   let canvas, ctx, rafId=null, running=false;
   let snakes=[], foods=[], player=null, lastTime=0, score=0;
   const camera = {x:0,y:0, zoom:1, vw:0, vh:0};
   const touch  = {active:false, sx:0, sy:0, ex:0, ey:0};
 
-  // ── snake
   class Snake {
     constructor(x,y, isPlayer=false, name='bot', color='#6bf2ff'){
       this.isPlayer=isPlayer; this.name=name; this.alive=true;
@@ -67,7 +65,7 @@
         if (h.y>CFG.worldSize-140) this.dir = lerpAngle(this.dir, -Math.PI/2, 0.2);
       }
 
-      // движение головы
+      // движение головы (вставляем новый сегмент)
       const nx=this.head().x + Math.cos(this.dir)*this.speed;
       const ny=this.head().y + Math.sin(this.dir)*this.speed;
       this.segs.unshift({x:nx,y:ny});
@@ -82,9 +80,13 @@
         }
       }
 
-      // рост/хвост: НЕ укорачиваем ниже базовой длины
-      if (this.wantGrow>0) this.wantGrow--;
-      else if (this.segs.length > CFG.initLen) this.segs.pop();
+      // ✅ рост/хвост: НЕ укорачиваем ниже базовой длины
+      if (this.wantGrow > 0) {
+        this.wantGrow--;
+      } else if (this.segs.length > CFG.initLen) {
+        this.segs.pop();
+      }
+      // (если длина == initLen — хвост не трогаем, чтобы не было «палочки»)
 
       // границы
       const hh=this.head();
@@ -102,7 +104,7 @@
     }
   }
 
-  // ── world
+  // world
   function dropFoodFromSnake(s){
     for(let i=0;i<s.segs.length;i+=CFG.dropEveryN){
       const p=s.segs[i]; foods.push({x:p.x,y:p.y});
@@ -127,17 +129,16 @@
     snakes = snakes.filter(s=>s.alive);
   }
 
-  // ── draw utils
+  // draw helpers
   function resize(){
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    const targetBase = 900; // регулируй «зум» под вкус
+    const targetBase = 900; // регулировка общего масштаба
     const k = Math.min(canvas.width, canvas.height) / targetBase;
     camera.zoom = clamp(k, 0.68, 1.15);
     camera.vw = canvas.width / camera.zoom;
     camera.vh = canvas.height / camera.zoom;
   }
-
   function updateCamera(){
     if(!player) return;
     camera.x = player.head().x - camera.vw/2;
@@ -146,7 +147,6 @@
     camera.y = clamp(camera.y, 0, CFG.worldSize-camera.vh);
   }
 
-  // сглаженная линия из точек (как «труба»)
   function drawSmoothPath(points){
     if (points.length<2) return;
     ctx.beginPath();
@@ -158,7 +158,6 @@
     }
     ctx.lineTo(points[points.length-1].x, points[points.length-1].y);
   }
-
   function drawGlowLayer(drawFn, color, blur){
     ctx.save();
     ctx.globalCompositeOperation='lighter';
@@ -166,7 +165,6 @@
     drawFn();
     ctx.restore();
   }
-
   function drawFood(){
     for(const f of foods){
       ctx.save();
@@ -175,7 +173,6 @@
       ctx.fill(); ctx.restore();
     }
   }
-
   function drawSnake(s){
     const r = s.radius;
 
@@ -219,7 +216,7 @@
       ctx.globalCompositeOperation='source-over';
     }
 
-    // голова: глаза + «нос»
+    // глаза + «нос»
     const head = s.head();
     const dpx = Math.cos(s.dir), dpy = Math.sin(s.dir);
     const nx = -dpy, ny = dpx;
@@ -243,7 +240,7 @@
     ctx.fill();
   }
 
-  // ── bg
+  // background
   function drawBackground(){
     // виньетка
     const g = ctx.createRadialGradient(
@@ -284,7 +281,7 @@
     ctx.closePath();
   }
 
-  // ── main draw
+  // main draw
   function draw(){
     ctx.setTransform(1,0,0,1,0,0);
     ctx.clearRect(0,0,canvas.width,canvas.height);
@@ -296,7 +293,7 @@
     for (const s of snakes) drawSnake(s);
   }
 
-  // ── loop
+  // loop
   function step(ts){
     if(!running) return;
     const dt = ts - lastTime || 16; lastTime = ts;
@@ -307,7 +304,7 @@
     rafId = requestAnimationFrame(step);
   }
 
-  // ── setup/teardown
+  // setup
   function spawnFoods(n=90){
     foods.length=0;
     for (let i=0;i<n;i++){
@@ -341,6 +338,7 @@
     spawnSnakes();
     running=true; lastTime=0; document.body.classList.add('playing-worm');
     rafId=requestAnimationFrame(step);
+    console.log('🐍 Worm v3 loaded');
   }
   function stop(){
     running=false;
@@ -352,7 +350,7 @@
   }
   function gameOver(){ running=false; setTimeout(stop, 450); }
 
-  // ── input
+  // input
   function bindInput(){
     window.addEventListener('keydown', e=>{
       if(!player) return; const k=e.key.toLowerCase();
@@ -378,7 +376,7 @@
     window.addEventListener('mouseup', onEnd);
   }
 
-  // ── color helpers
+  // color helpers
   function hexToRgb(h){
     const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(h);
     return m ? {r:parseInt(m[1],16), g:parseInt(m[2],16), b:parseInt(m[3],16)} : {r:255,g:255,b:255};
@@ -390,7 +388,7 @@
   function lighten(hex, k){ const {r,g,b}=hexToRgb(hex); return rgbToHex(r+(255-r)*k, g+(255-g)*k, b+(255-b)*k); }
   function darken(hex, k){ const {r,g,b}=hexToRgb(hex); return rgbToHex(r*(1-k), g*(1-k), b*(1-k)); }
 
-  // ── UI link
+  // UI link
   document.addEventListener('ui:start-worm', start);
   document.addEventListener('ui:menu', stop);
   window.__worm = { start, stop };
