@@ -5,39 +5,43 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="mobile-web-app-capable" content="yes" />
-<meta name="theme-color" content="#0b0f1a" />
-<title>Cosmo Arcade — Touch Fix</title>
+<meta name="theme-color" content="#071126" />
+<title>Cosmo Arcade — Touch Update (joysticks per mode)</title>
 <style>
-  :root { --bg:#0b0f1a; --panel:#0f1628; --line:#1f2844; --btn:#1b2a4a; --btn-b:#33538d; }
+  :root { --bg:#070b17; --panel:#0f1730; --line:#1e2a4a; --btn:#1a2b54; --btn-b:#365aa2; }
   html,body{margin:0;height:100%;background:var(--bg);color:#fff;font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial}
   #wrap{display:flex;flex-direction:column;height:100dvh}
-  header{padding:8px 12px;background:var(--panel);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px}
-  header h1{font-size:16px;margin:0;opacity:.9}
+
+  header{padding:8px 12px;background:var(--panel);
+    border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;
+    box-shadow:0 4px 20px rgba(0,0,0,.35)}
+  header h1{font-size:16px;margin:0;opacity:.95;letter-spacing:.2px}
   #ui{margin-left:auto;display:flex;gap:6px;align-items:center}
-  #score{padding:6px 10px;background:#141e34;border:1px solid #263556;border-radius:8px;font-weight:700}
+  #score{padding:6px 10px;background:#132044;border:1px solid #2a3f6f;border-radius:8px;font-weight:700;box-shadow:inset 0 0 12px rgba(100,160,255,.2)}
   #boosts{opacity:.9;font-size:12px;max-width:40ch;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
   #stage{position:relative;flex:1;min-height:0}
-  #canvas{position:absolute;inset:0;display:block;width:100%;height:100%;touch-action:none}
-  #menu{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(5,8,14,.85)}
-  .card{background:#111a2e;border:1px solid #263556;border-radius:14px;padding:18px;max-width:520px;width:92%;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+  #canvas{position:absolute;inset:0;display:block;width:100%;height:100%;touch-action:none;
+    background: radial-gradient(1200px 800px at 50% 110%, #0d1a3a, #0a1126 55%, #070b17);}
+
+  #menu{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(5,8,14,.86);backdrop-filter:blur(2px)}
+  .card{background:#0f1630d9;border:1px solid #2b3f6f;border-radius:14px;padding:18px;max-width:540px;width:92%;
+    box-shadow:0 12px 36px rgba(0,0,0,.5)}
   .card h2{margin:0 0 10px 0}
   .btn{display:block;width:100%;padding:14px 16px;margin:8px 0;background:var(--btn);border:1px solid var(--btn-b);border-radius:12px;color:#fff;font-weight:700;text-align:center;text-decoration:none;cursor:pointer}
   .row{display:flex;gap:8px}
   .btn.small{flex:1;padding:10px}
   .field{display:flex;gap:8px;align-items:center;margin-top:8px}
-  .field label{opacity:.8;font-size:13px}
-  select{background:#0e1628;color:#fff;border:1px solid #2b3e68;border-radius:8px;padding:8px}
+  .field label{opacity:.85;font-size:13px}
+  select{background:#0f1a36;color:#fff;border:1px solid #2b3f6f;border-radius:8px;padding:8px}
 
-  /* Джойстики */
+  /* Джойстики — по одному для каждого режима, скрываем/показываем из JS */
   #touch{position:absolute;left:10px;right:10px;bottom:10px;display:flex;justify-content:space-between;gap:10px;pointer-events:none}
-  .joy{pointer-events:auto;position:relative;width:120px;height:120px;border-radius:50%;background:#0e1628cc;border:1px solid #2b3e68}
+  .joy{pointer-events:auto;position:relative;display:none;width:120px;height:120px;border-radius:50%;
+       background:#0b1430cc;border:1px solid #2b3e68;box-shadow:0 0 18px rgba(100,170,255,.18) inset}
   .joy.small{width:100px;height:100px}
-  .knob{
-    position:absolute;left:50%;top:50%;
-    width:56px;height:56px;border-radius:50%;
-    background:#142348;border:1px solid #3b5ca0;
-    transform:translate(-50%,-50%);
-  }
+  .knob{position:absolute;left:50%;top:50%;width:56px;height:56px;border-radius:50%;
+        background:#172a58;border:1px solid #3b5ca0;transform:translate(-50%,-50%);box-shadow:0 0 10px rgba(90,150,255,.35)}
   .joy.small .knob{width:48px;height:48px}
 
   #hint{position:absolute;right:10px;bottom:10px;background:#0e1628cc;border:1px solid #2b3e68;border-radius:10px;padding:8px 10px;font-size:12px}
@@ -75,13 +79,13 @@
         <div class="row" style="margin-top:6px">
           <div class="btn small" id="help">Управление</div>
         </div>
-        <p style="opacity:.8;font-size:12px;margin:8px 0 0 0">
-          Обновления: 🌈 радужный червь + выбор цвета; левый джойстик — поворот; у кота тап = прыжок, правый джойстик — ходьба.
+        <p style="opacity:.85;font-size:12px;margin:8px 0 0 0">
+          Обновления: джойстики показываются только в своём режиме; у кота — прыжок по тапу в любой точке.
         </p>
       </div>
     </div>
 
-    <!-- Левый джойстик (поворот червя) и правый мини-джойстик (ходьба кота) -->
+    <!-- Левый — для Worm; Правый — для Cat -->
     <div id="touch">
       <div class="joy" id="joyLeft"><div class="knob"></div></div>
       <div class="joy small" id="joyRight"><div class="knob"></div></div>
@@ -102,7 +106,7 @@
   const hint = document.getElementById('hint');
   const selWormColor = document.getElementById('wormColor');
 
-  // Блокируем прокрутку над игрой
+  // Блокируем скролл/зум над игрой
   ['touchstart','touchmove','gesturestart'].forEach(evt=>{
     document.addEventListener(evt, e => {
       if (e.target.closest('#canvas') || e.target.closest('.joy')) e.preventDefault();
@@ -120,7 +124,7 @@
   window.addEventListener('resize', resize);
   resize();
 
-  // ===== HUD / бусты
+  // HUD/бусты
   let score = 0;
   const boosts = {};
   const hasBoost = k => (boosts[k]||0) > 0;
@@ -138,79 +142,71 @@
   }
   function resetHud(){ score=0; for (const k in boosts) delete boosts[k]; updateHud(); }
 
-  // ===== Состояния / меню
+  // Меню/режимы + показ джойстиков по режимам
   let state = 'menu';
-  function showMenu(){ state='menu'; menu.style.display='flex'; }
+  const joyLeftEl = document.getElementById('joyLeft');
+  const joyRightEl = document.getElementById('joyRight');
+  function showJoysticksFor(mode){
+    joyLeftEl.style.display  = (mode==='worm') ? 'block' : 'none';
+    joyRightEl.style.display = (mode==='cat')  ? 'block' : 'none';
+  }
+  function showMenu(){ state='menu'; menu.style.display='flex'; showJoysticksFor('none'); }
   function hideMenu(){ menu.style.display='none'; }
   document.querySelectorAll('[data-mode]').forEach(btn=>{
     btn.onclick = () => {
-      if (btn.dataset.mode === 'worm'){ startWorm(); state='worm'; }
-      else { startCat(); state='cat'; }
+      if (btn.dataset.mode === 'worm'){ startWorm(); state='worm'; showJoysticksFor('worm'); }
+      else { startCat(); state='cat'; showJoysticksFor('cat'); }
       hideMenu();
     };
   });
   backBtn.onclick = showMenu;
   document.getElementById('help').onclick = () => {
-    hint.textContent = 'Червь: левый джойстик крутит направление. Кот: тап = прыжок, правый джойстик — ходьба.';
-    setTimeout(()=> hint.textContent='', 4000);
+    hint.textContent = 'Worm: левый джойстик крутит направление. Cat: правый джойстик — ходьба, тап в любой точке — прыжок.';
+    setTimeout(()=> hint.textContent='', 4200);
   };
 
-  // ===== Джойстики (исправлено позиционирование “ручки” и осей)
+  // === Универсальный джойстик (фиксы осей и тяги)
   function makeJoystick(root, radiusPx=50){
     const knob = root.querySelector('.knob');
     const st = {ax:0, ay:0, active:false};
     let rect=null, id=null, startT=0, startPos=null;
-
     const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
     function setKnob(ax, ay){
-      // ax/ay в диапазоне -1..1 → переводим в проценты относительно центра
       knob.style.left = (50 + clamp(ax,-1,1)*50) + '%';
       knob.style.top  = (50 + clamp(ay,-1,1)*50) + '%';
       knob.style.transform = 'translate(-50%,-50%)';
     }
-    function reset(){
-      st.ax=0; st.ay=0; st.active=false;
-      setKnob(0,0);
-    }
+    function reset(){ st.ax=0; st.ay=0; st.active=false; setKnob(0,0); }
     root.addEventListener('pointerdown', e=>{
-      e.preventDefault();
-      id = e.pointerId; rect = root.getBoundingClientRect(); root.setPointerCapture?.(id);
-      st.active = true; startT = performance.now(); startPos = {x:e.clientX, y:e.clientY};
-      const cx = rect.left + rect.width/2, cy = rect.top + rect.height/2;
-      const dx = e.clientX - cx, dy = e.clientY - cy;
-      st.ax = clamp(dx / radiusPx, -1, 1);
-      st.ay = clamp(dy / radiusPx, -1, 1);
+      e.preventDefault(); id=e.pointerId; rect=root.getBoundingClientRect(); root.setPointerCapture?.(id);
+      st.active=true; startT=performance.now(); startPos={x:e.clientX,y:e.clientY};
+      const cx=rect.left+rect.width/2, cy=rect.top+rect.height/2;
+      st.ax = clamp((e.clientX-cx)/radiusPx,-1,1);
+      st.ay = clamp((e.clientY-cy)/radiusPx,-1,1);
       setKnob(st.ax, st.ay);
+      // В режиме Cat: тап даже по джойстику тоже считается как прыжок
+      if (state==='cat') triggerCatTapJump();
     }, {passive:false});
     root.addEventListener('pointermove', e=>{
       if (!st.active || e.pointerId!==id) return;
-      const cx = rect.left + rect.width/2, cy = rect.top + rect.height/2;
-      const dx = e.clientX - cx, dy = e.clientY - cy;
-      st.ax = clamp(dx / radiusPx, -1, 1);
-      st.ay = clamp(dy / radiusPx, -1, 1);
+      const cx=rect.left+rect.width/2, cy=rect.top+rect.height/2;
+      st.ax = clamp((e.clientX-cx)/radiusPx,-1,1);
+      st.ay = clamp((e.clientY-cy)/radiusPx,-1,1);
       setKnob(st.ax, st.ay);
     });
-    root.addEventListener('pointerup', e=>{
-      if (e.pointerId!==id) return;
-      // короткий тап по правому джойстику = прыжок (для кота)
-      const isRight = root.id === 'joyRight';
-      const dt = (performance.now()-startT)/1000;
-      const dist = Math.hypot(e.clientX-startPos.x, e.clientY-startPos.y);
-      if (isRight && dt < 0.18 && dist < 12) triggerCatTapJump();
-      reset();
-    });
-    root.addEventListener('pointercancel', ()=> reset());
-    root.addEventListener('pointerleave',  ()=> reset());
-
-    // начальное положение
+    const end = (e)=>{
+      if (e.pointerId!==id) return; reset();
+    };
+    root.addEventListener('pointerup', end);
+    root.addEventListener('pointercancel', end);
+    root.addEventListener('pointerleave', end);
     setKnob(0,0);
     return st;
   }
+  const joyLeft  = makeJoystick(joyLeftEl, 50);
+  const joyRight = makeJoystick(joyRightEl, 40);
 
-  const joyLeft  = makeJoystick(document.getElementById('joyLeft'), 50); // поворот червя
-  const joyRight = makeJoystick(document.getElementById('joyRight'), 40); // ходьба кота
-
-  // ===== Worm Arena (левый джойстик крутит направление)
+  // ==== WORM (левый джойстик управляет направлением)
   let worm, foods=[], stars=[];
   let wormColorMode = 'rainbow';
   selWormColor.addEventListener('change', ()=> wormColorMode = selWormColor.value);
@@ -219,15 +215,14 @@
     resetHud();
     wormColorMode = selWormColor.value;
     const W = canvas.clientWidth, H = canvas.clientHeight;
-    worm = { x:W/2, y:H/2, angle:-Math.PI/2, speed: Math.min(W,H)*0.18, turn: 2.6, trail:[], segments:14, step:4 };
+    worm = { x:W/2, y:H/2, angle:-Math.PI/2, speed: Math.min(W,H)*0.19, trail:[], segments:16, step:4 };
     foods = []; stars = [];
-    const foodCount = Math.round((W*H)/9000);
+    const foodCount = Math.round((W*H)/8500);
     for(let i=0;i<foodCount;i++) foods.push({x:Math.random()*W, y:Math.random()*H});
     for(let i=0;i<4;i++) stars.push({x:Math.random()*W, y:Math.random()*H, type:['speed','magnet','x2','shield'][i%4]});
   }
 
   function updateWorm(dt){
-    // направление из левого джойстика
     if (joyLeft.active){
       worm.angle = Math.atan2(joyLeft.ay, joyLeft.ax);
     }
@@ -240,12 +235,12 @@
     if (worm.y<0) worm.y+=H; if (worm.y>H) worm.y-=H;
 
     worm.trail.unshift({x:worm.x,y:worm.y});
-    if (worm.trail.length > 1400) worm.trail.pop();
+    if (worm.trail.length > 1600) worm.trail.pop();
 
     if (hasBoost('magnet')){
       for (const f of foods){
         const dx = worm.x - f.x, dy = worm.y - f.y, d = Math.hypot(dx,dy);
-        if (d < 140){ f.x += dx/d * 100*dt; f.y += dy/d * 100*dt; }
+        if (d < 150){ f.x += dx/d * 110*dt; f.y += dy/d * 110*dt; }
       }
     }
     for (let i=foods.length-1;i>=0;i--){
@@ -253,7 +248,7 @@
       if (Math.hypot(f.x-worm.x, f.y-worm.y) < 12){
         foods.splice(i,1);
         score += 5 * scoreMul(); updateHud();
-        worm.segments = Math.min(90, worm.segments+1);
+        worm.segments = Math.min(100, worm.segments+1);
         foods.push({x:Math.random()*W, y:Math.random()*H});
       }
     }
@@ -267,7 +262,7 @@
     }
   }
 
-  // Радужная раскраска
+  // Радужная палитра
   function hsl(h,s,l){
     s/=100; l/=100;
     const k = n => (n + h/30) % 12;
@@ -275,73 +270,70 @@
     const f = n => l - a * Math.max(-1, Math.min(k(n)-3, Math.min(9-k(n),1)));
     return `rgb(${Math.round(255*f(0))},${Math.round(255*f(8))},${Math.round(255*f(4))})`;
   }
+
   function drawWorm(){
     const W = canvas.clientWidth, H = canvas.clientHeight;
-    ctx.fillStyle = '#0a0e19'; ctx.fillRect(0,0,W,H);
-    ctx.save(); ctx.globalAlpha=.6;
-    for(let i=0;i<120;i++){ const x=(i*97)%W; const y=(i*53)%H; ctx.fillStyle=i%7===0?'#7dd3ff':'#cbd5e1'; ctx.fillRect(x,y,2,2); }
-    ctx.restore();
-    ctx.fillStyle='#63c8ff';
-    foods.forEach(f=>{ ctx.beginPath(); ctx.arc(f.x,f.y,3.5,0,Math.PI*2); ctx.fill(); });
+    drawSpaceBackdrop();
+    // еда/бусты
+    ctx.fillStyle='#7ad3ff';
+    foods.forEach(f=>{ ctx.shadowColor='#61d2ff'; ctx.shadowBlur=8; ctx.beginPath(); ctx.arc(f.x,f.y,3.5,0,Math.PI*2); ctx.fill(); ctx.shadowBlur=0; });
     stars.forEach(b=> drawStar(b.x,b.y,9,b.type));
+    // тело
     for(let s=0;s<worm.segments;s++){
       const idx = s*worm.step; const p = worm.trail[idx] || worm;
-      const r = Math.max(3, 9 - s*0.08);
+      const r = Math.max(3.2, 9.5 - s*0.08);
       let color = '#f9a825';
       if (wormColorMode==='rainbow'){
-        const hue = (s*12 + (performance.now()/40)%360) % 360;
+        const hue = (s*14 + (performance.now()/40)%360) % 360;
         color = hsl(hue, 90, 55);
       } else if (wormColorMode==='red') color='#ff5b5b';
       else if (wormColorMode==='green') color='#7eed6b';
       else if (wormColorMode==='blue') color='#64b5ff';
       else if (wormColorMode==='purple') color='#c084fc';
       if (s===0 && wormColorMode!=='rainbow') color = '#ffd166';
-      ctx.beginPath(); ctx.fillStyle = color;
-      ctx.arc(p.x,p.y,r,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.fillStyle = color; ctx.shadowColor=color; ctx.shadowBlur = s<6 ? 14 : 0;
+      ctx.arc(p.x,p.y,r,0,Math.PI*2); ctx.fill(); ctx.shadowBlur=0;
     }
   }
 
-  // ===== Trampoline Cat
+  // ==== CAT (правый джойстик ходьба, тап — прыжок в любой точке)
   let cat, tramps=[], camY=0, maxY=0, catStars=[], jumpLatch=false;
   let catJumpTapTimer = 0;
 
   function startCat(){
     resetHud();
     const W = canvas.clientWidth;
-    cat = { x:W/2, y:200, vx:0, vy:0, onGround:false };
+    cat = { x:W/2, y:220, vx:0, vy:0, onGround:false };
     tramps = []; catStars = []; camY=0; maxY=0; jumpLatch=false; catJumpTapTimer=0;
-    for(let i=0;i<14;i++) addTramp(i===0 ? 230 : null);
-    for(let i=0;i<3;i++) spawnCatBoost(Math.random()*600+200);
+    for(let i=0;i<14;i++) addTramp(i===0 ? 260 : null);
+    for(let i=0;i<3;i++) spawnCatBoost(Math.random()*600+240);
   }
   function addTramp(constY=null){
     const W = canvas.clientWidth;
     const gapY = 90 + Math.random()*90;
-    const newY = constY!==null ? constY : (tramps.length ? tramps[tramps.length-1].y - gapY : 230);
+    const newY = constY!==null ? constY : (tramps.length ? tramps[tramps.length-1].y - gapY : 260);
     const x = 60 + Math.random()*(W-120);
-    tramps.push({x, y:newY, w:Math.max(100, Math.min(180, W*0.25)), h:16, bouncy: 13+Math.random()*4});
+    tramps.push({x, y:newY, w:Math.max(110, Math.min(200, W*0.28)), h:18, bouncy: 14+Math.random()*4});
   }
   function spawnCatBoost(y){
     const W = canvas.clientWidth;
-    catStars.push({x: 60+Math.random()*(W-120), y: y-(Math.random()*200), r:10, type: ['speed','magnet','x2'][Math.floor(Math.random()*3)]});
+    catStars.push({x: 60+Math.random()*(W-120), y: y-(Math.random()*220), r:10, type: ['speed','magnet','x2'][Math.floor(Math.random()*3)]});
   }
 
-  // Тап по канвасу (кроме области джойстиков) = прыжок
-  function triggerCatTapJump(){ catJumpTapTimer = 0.12; }
-  canvas.addEventListener('pointerdown', (e)=>{
-    if (e.target.closest('.joy')) return;
-    triggerCatTapJump();
-  }, {passive:false});
+  // Тап в ЛЮБОЙ точке экрана → запрос на прыжок (только в режиме Cat)
+  function triggerCatTapJump(){ if (state==='cat') catJumpTapTimer = 0.12; }
+  window.addEventListener('pointerdown', (e)=>{ if (state==='cat') triggerCatTapJump(); }, {passive:false});
 
   function updateCat(dt){
     const W = canvas.clientWidth, H = canvas.clientHeight;
 
-    // Горизонталь из правого джойстика (фикс: читается всегда, active не обязателен)
+    // Горизонталь из правого джойстика (работает и когда не active — ноль)
     const move = joyRight.ax; // -1..1
-    const moveSpeed = hasBoost('speed') ? 240 : 180;
+    const moveSpeed = hasBoost('speed') ? 250 : 190;
     cat.vx = move * moveSpeed;
 
     // Физика
-    cat.vy += 520*dt;
+    cat.vy += 540*dt;
     cat.x += cat.vx*dt;
     cat.y += cat.vy*dt;
     cat.x = Math.max(16, Math.min(W-16, cat.x));
@@ -349,8 +341,8 @@
     // Платформы
     cat.onGround = false;
     for (const t of tramps){
-      if (cat.vy > 0 && cat.y+8 >= t.y && cat.y+8 <= t.y+t.h && cat.x > t.x && cat.x < t.x+t.w){
-        cat.y = t.y-8; cat.vy = -t.bouncy; cat.onGround = true; score += 1*scoreMul(); updateHud();
+      if (cat.vy > 0 && cat.y+10 >= t.y && cat.y+10 <= t.y+t.h && cat.x > t.x && cat.x < t.x+t.w){
+        cat.y = t.y-10; cat.vy = -t.bouncy; cat.onGround = true; score += 1*scoreMul(); updateHud();
       }
     }
 
@@ -359,21 +351,21 @@
     const wantJump = catJumpTapTimer > 0;
     if (wantJump && cat.onGround && !jumpLatch){
       jumpLatch = true;
-      cat.vy = -(hasBoost('speed') ? 18 : 14);
+      cat.vy = -(hasBoost('speed') ? 18 : 15);
       catJumpTapTimer = 0;
     }
     if (!wantJump) jumpLatch = false;
 
     // Камера / спавн
     if (cat.y < maxY) maxY = cat.y;
-    camY = Math.min(0, -maxY + H*0.28);
+    camY = Math.min(0, -maxY + H*0.3);
     const highest = tramps.reduce((m,t)=> Math.min(m,t.y), tramps[0]?.y||0);
-    while (highest - camY > -H*1.2 && tramps.length < 36) addTramp();
+    while (highest - camY > -H*1.3 && tramps.length < 38) addTramp();
     for (let i=tramps.length-1;i>=0;i--){
-      if (tramps[i].y - camY > H+100){
+      if (tramps[i].y - camY > H+120){
         tramps.splice(i,1);
         addTramp(tramps.reduce((m,t)=>Math.min(m,t.y),9999) - (90+Math.random()*90));
-        spawnCatBoost(tramps.reduce((m,t)=>Math.min(m,t.y),9999) - 100);
+        spawnCatBoost(tramps.reduce((m,t)=>Math.min(m,t.y),9999) - 120);
       }
     }
 
@@ -387,56 +379,102 @@
       if (Math.hypot(dx,dy) < 16){ catStars.splice(i,1); addBoost(b.type, 8); }
     }
 
-    if (cat.y - camY > H + 80){ showMenu(); }
+    if (cat.y - camY > H + 120){ showMenu(); }
   }
 
   function drawCat(){
     const W = canvas.clientWidth, H = canvas.clientHeight;
-    ctx.fillStyle='#0a0e19'; ctx.fillRect(0,0,W,H);
-    ctx.save(); ctx.globalAlpha=.6;
-    for(let i=0;i<120;i++){ const x=(i*97)%W; const y=((i*53)%H) + (camY*.2 % H); ctx.fillStyle=i%7===0?'#7dd3ff':'#cbd5e1'; ctx.fillRect(x,y,2,2); }
-    ctx.restore();
+    drawSpaceBackdrop(camY);
+    // бусты
     catStars.forEach(b => drawStar(b.x, b.y - camY, 10, b.type));
-    ctx.fillStyle='#7cf0d0'; ctx.strokeStyle='rgba(0,0,0,.22)';
-    tramps.forEach(t=>{ roundRect(t.x, t.y - camY, t.w, t.h, 8); ctx.fill(); ctx.stroke(); });
+    // платформы
+    ctx.fillStyle='#80ffd8'; ctx.strokeStyle='rgba(0,0,0,.22)'; ctx.lineWidth=1;
+    tramps.forEach(t=>{ roundRect(t.x, t.y - camY, t.w, t.h, 10); ctx.shadowColor='#80ffd8'; ctx.shadowBlur=8; ctx.fill(); ctx.shadowBlur=0; ctx.stroke(); });
+    // кот
     drawCatAstronaut(cat.x, cat.y - camY);
   }
 
-  // ===== Рендер-утилиты
+  // ==== Рендер-утилиты и фон
+  function drawSpaceBackdrop(offsetY=0){
+    const W = canvas.clientWidth, H = canvas.clientHeight;
+    // мягкий звёздный шум
+    ctx.fillStyle='rgba(255,255,255,.03)';
+    for(let i=0;i<160;i++){
+      const x=(i*97)%W, y=((i*53)%H) + (offsetY*.2 % H);
+      ctx.fillRect(x,y,2,2);
+    }
+    // лёгкое свечение по краям
+    const grad = ctx.createRadialGradient(W*0.5, H*0.66, 50, W*0.5, H*0.66, Math.max(W,H)*0.9);
+    grad.addColorStop(0,'rgba(40,100,255,.06)');
+    grad.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=grad; ctx.fillRect(0,0,W,H);
+  }
+
   function drawStar(x,y,r,type){
     ctx.save(); ctx.translate(x,y); ctx.rotate(performance.now()/800);
     ctx.beginPath();
     for(let i=0;i<10;i++){ const ang=i*Math.PI/5; const rr=(i%2===0? r : r*0.45); ctx.lineTo(Math.cos(ang)*rr, Math.sin(ang)*rr); }
     ctx.closePath();
     ctx.fillStyle = type==='speed'?'#ffd166': type==='magnet'?'#7dd3fc': type==='shield'?'#a5b4fc':'#f9a8d4';
-    ctx.fill(); ctx.restore();
+    ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = 10;
+    ctx.fill(); ctx.shadowBlur = 0; ctx.restore();
   }
   function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+
+  // Кот — более «котик» :)
   function drawCatAstronaut(x,y){
     ctx.save(); ctx.translate(x,y);
-    ctx.fillStyle = '#f59e0b'; roundRect(-11,-6,22,24,6); ctx.fill();
-    ctx.beginPath(); ctx.fillStyle='#fda4af'; ctx.arc(0,-16,11,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.moveTo(-7,-22); ctx.lineTo(-2,-30); ctx.lineTo(3,-22); ctx.closePath(); ctx.fill();
-    ctx.beginPath(); ctx.moveTo(7,-22); ctx.lineTo(2,-30); ctx.lineTo(-3,-22); ctx.closePath(); ctx.fill();
-    ctx.fillStyle='#111'; ctx.beginPath(); ctx.arc(-3,-17,2,0,Math.PI*2); ctx.arc(3,-17,2,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.strokeStyle='rgba(173,216,230,.85)'; ctx.lineWidth=3; ctx.arc(0,-16,14,0,Math.PI*2); ctx.stroke();
+
+    // тень
+    ctx.fillStyle='rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(0,16,14,6,0,0,Math.PI*2); ctx.fill();
+
+    // хвост
+    ctx.strokeStyle='#f5a623'; ctx.lineWidth=6; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(-10,6); ctx.quadraticCurveTo(-26,2,-20,-8); ctx.stroke();
+
+    // тело (скафандр)
+    ctx.fillStyle = '#f59e0b';
+    roundRect(-12,-6,24,26,8); ctx.fill();
+    // полоски на руках
+    ctx.strokeStyle='#ffdf8a'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(-10,2); ctx.lineTo(-2,2); ctx.moveTo(2,2); ctx.lineTo(10,2); ctx.stroke();
+
+    // рюкзак
+    ctx.fillStyle='#1e2a4a'; roundRect(-16,-4,6,20,3); ctx.fill();
+
+    // голова
+    ctx.beginPath(); ctx.fillStyle='#fca5a5'; ctx.arc(0,-16,11,0,Math.PI*2); ctx.fill();
+
+    // ушки
+    ctx.beginPath(); ctx.moveTo(-8,-20); ctx.lineTo(-3,-28); ctx.lineTo(2,-20); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(8,-20); ctx.lineTo(3,-28); ctx.lineTo(-2,-20); ctx.closePath(); ctx.fill();
+
+    // глаза и нос
+    ctx.fillStyle='#111'; ctx.beginPath(); ctx.arc(-3.5,-17,2,0,Math.PI*2); ctx.arc(3.5,-17,2,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#f87171'; ctx.beginPath(); ctx.moveTo(0,-14); ctx.lineTo(2,-12); ctx.lineTo(-2,-12); ctx.closePath(); ctx.fill();
+
+    // усы
+    ctx.strokeStyle='rgba(0,0,0,.6)'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(-2,-14); ctx.lineTo(-10,-13);
+    ctx.moveTo(-2,-16); ctx.lineTo(-10,-16.5);
+    ctx.moveTo(2,-14);  ctx.lineTo(10,-13);
+    ctx.moveTo(2,-16);  ctx.lineTo(10,-16.5); ctx.stroke();
+
+    // шлем стекло
+    ctx.beginPath(); ctx.strokeStyle='rgba(173,216,230,.9)'; ctx.lineWidth=3; ctx.arc(0,-16,14,0,Math.PI*2); ctx.stroke();
+    // блик
+    ctx.beginPath(); ctx.strokeStyle='rgba(200,240,255,.35)'; ctx.lineWidth=2; ctx.arc(-5,-20,8,0,Math.PI*1.2); ctx.stroke();
+
     ctx.restore();
   }
 
-  // ===== Главный цикл
+  // Главный цикл
   let last = performance.now(), paused = false;
   function loop(now){
     const dt = Math.min(0.033, (now - last)/1000); last = now;
     if (!paused){
       if (state === 'worm'){ updateWorm(dt); tickBoosts(dt); drawWorm(); }
       else if (state === 'cat'){ updateCat(dt); tickBoosts(dt); drawCat(); }
-      else {
-        const W = canvas.clientWidth, H = canvas.clientHeight;
-        ctx.fillStyle='#0a0e19'; ctx.fillRect(0,0,W,H);
-        ctx.save(); ctx.globalAlpha=.5;
-        for(let i=0;i<100;i++){ const x=(i*73)%W; const y=(i*41)%H; ctx.fillStyle=i%9===0?'#7dd3ff':'#cbd5e1'; ctx.fillRect(x,y,2,2); }
-        ctx.restore();
-      }
+      else { drawSpaceBackdrop(); }
     }
     requestAnimationFrame(loop);
   }
