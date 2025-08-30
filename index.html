@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="theme-color" content="#0b0f1a" />
-<title>Cosmo Arcade — Touch Update</title>
+<title>Cosmo Arcade — Touch Fix</title>
 <style>
   :root { --bg:#0b0f1a; --panel:#0f1628; --line:#1f2844; --btn:#1b2a4a; --btn-b:#33538d; }
   html,body{margin:0;height:100%;background:var(--bg);color:#fff;font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial}
@@ -31,11 +31,15 @@
   /* Джойстики */
   #touch{position:absolute;left:10px;right:10px;bottom:10px;display:flex;justify-content:space-between;gap:10px;pointer-events:none}
   .joy{pointer-events:auto;position:relative;width:120px;height:120px;border-radius:50%;background:#0e1628cc;border:1px solid #2b3e68}
-  .knob{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:56px;height:56px;border-radius:50%;background:#142348;border:1px solid #3b5ca0}
   .joy.small{width:100px;height:100px}
+  .knob{
+    position:absolute;left:50%;top:50%;
+    width:56px;height:56px;border-radius:50%;
+    background:#142348;border:1px solid #3b5ca0;
+    transform:translate(-50%,-50%);
+  }
   .joy.small .knob{width:48px;height:48px}
 
-  /* Подсказка */
   #hint{position:absolute;right:10px;bottom:10px;background:#0e1628cc;border:1px solid #2b3e68;border-radius:10px;padding:8px 10px;font-size:12px}
 </style>
 </head>
@@ -53,7 +57,6 @@
   <div id="stage">
     <canvas id="canvas"></canvas>
 
-    <!-- Меню -->
     <div id="menu">
       <div class="card">
         <h2>Выбери режим</h2>
@@ -73,12 +76,12 @@
           <div class="btn small" id="help">Управление</div>
         </div>
         <p style="opacity:.8;font-size:12px;margin:8px 0 0 0">
-          Обновления: 🌈 радужный червь + выбор цвета, левый джойстик для поворота; у кота — тап = прыжок, правый мини-джойстик для ходьбы.
+          Обновления: 🌈 радужный червь + выбор цвета; левый джойстик — поворот; у кота тап = прыжок, правый джойстик — ходьба.
         </p>
       </div>
     </div>
 
-    <!-- Управление: левый джойстик (поворот), правый мини-джойстик (ходьба) -->
+    <!-- Левый джойстик (поворот червя) и правый мини-джойстик (ходьба кота) -->
     <div id="touch">
       <div class="joy" id="joyLeft"><div class="knob"></div></div>
       <div class="joy small" id="joyRight"><div class="knob"></div></div>
@@ -99,7 +102,7 @@
   const hint = document.getElementById('hint');
   const selWormColor = document.getElementById('wormColor');
 
-  // Блокируем скролл/зум над игрой
+  // Блокируем прокрутку над игрой
   ['touchstart','touchmove','gesturestart'].forEach(evt=>{
     document.addEventListener(evt, e => {
       if (e.target.closest('#canvas') || e.target.closest('.joy')) e.preventDefault();
@@ -117,7 +120,7 @@
   window.addEventListener('resize', resize);
   resize();
 
-  // HUD/бусты
+  // ===== HUD / бусты
   let score = 0;
   const boosts = {};
   const hasBoost = k => (boosts[k]||0) > 0;
@@ -135,7 +138,7 @@
   }
   function resetHud(){ score=0; for (const k in boosts) delete boosts[k]; updateHud(); }
 
-  // Состояние
+  // ===== Состояния / меню
   let state = 'menu';
   function showMenu(){ state='menu'; menu.style.display='flex'; }
   function hideMenu(){ menu.style.display='none'; }
@@ -152,53 +155,62 @@
     setTimeout(()=> hint.textContent='', 4000);
   };
 
-  // ========= Джойстики =========
+  // ===== Джойстики (исправлено позиционирование “ручки” и осей)
   function makeJoystick(root, radiusPx=50){
     const knob = root.querySelector('.knob');
-    const state = {ax:0, ay:0, active:false};
-    let rect=null, id=null;
+    const st = {ax:0, ay:0, active:false};
+    let rect=null, id=null, startT=0, startPos=null;
 
-    function setKnob(dx,dy){
-      const len = Math.hypot(dx,dy);
-      const max = radiusPx;
-      const k = len>max ? max/len : 1;
-      knob.style.transform = `translate(${dx*k}px, ${dy*k}px)`;
+    const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
+    function setKnob(ax, ay){
+      // ax/ay в диапазоне -1..1 → переводим в проценты относительно центра
+      knob.style.left = (50 + clamp(ax,-1,1)*50) + '%';
+      knob.style.top  = (50 + clamp(ay,-1,1)*50) + '%';
+      knob.style.transform = 'translate(-50%,-50%)';
     }
     function reset(){
-      state.ax=0; state.ay=0; state.active=false; knob.style.transform='translate(-50%,-50%)';
+      st.ax=0; st.ay=0; st.active=false;
+      setKnob(0,0);
     }
-
     root.addEventListener('pointerdown', e=>{
+      e.preventDefault();
       id = e.pointerId; rect = root.getBoundingClientRect(); root.setPointerCapture?.(id);
-      state.active=true;
+      st.active = true; startT = performance.now(); startPos = {x:e.clientX, y:e.clientY};
       const cx = rect.left + rect.width/2, cy = rect.top + rect.height/2;
       const dx = e.clientX - cx, dy = e.clientY - cy;
-      const nx = dx/radiusPx, ny = dy/radiusPx;
-      state.ax = Math.max(-1, Math.min(1, nx));
-      state.ay = Math.max(-1, Math.min(1, ny));
-      setKnob(state.ax*radiusPx, state.ay*radiusPx);
-    });
+      st.ax = clamp(dx / radiusPx, -1, 1);
+      st.ay = clamp(dy / radiusPx, -1, 1);
+      setKnob(st.ax, st.ay);
+    }, {passive:false});
     root.addEventListener('pointermove', e=>{
-      if (!state.active || e.pointerId!==id) return;
+      if (!st.active || e.pointerId!==id) return;
       const cx = rect.left + rect.width/2, cy = rect.top + rect.height/2;
       const dx = e.clientX - cx, dy = e.clientY - cy;
-      const nx = dx/radiusPx, ny = dy/radiusPx;
-      state.ax = Math.max(-1, Math.min(1, nx));
-      state.ay = Math.max(-1, Math.min(1, ny));
-      setKnob(state.ax*radiusPx, state.ay*radiusPx);
+      st.ax = clamp(dx / radiusPx, -1, 1);
+      st.ay = clamp(dy / radiusPx, -1, 1);
+      setKnob(st.ax, st.ay);
     });
-    const end = e=>{ if (e.pointerId===id){ reset(); } };
-    root.addEventListener('pointerup', end);
-    root.addEventListener('pointercancel', end);
-    root.addEventListener('pointerleave', end);
+    root.addEventListener('pointerup', e=>{
+      if (e.pointerId!==id) return;
+      // короткий тап по правому джойстику = прыжок (для кота)
+      const isRight = root.id === 'joyRight';
+      const dt = (performance.now()-startT)/1000;
+      const dist = Math.hypot(e.clientX-startPos.x, e.clientY-startPos.y);
+      if (isRight && dt < 0.18 && dist < 12) triggerCatTapJump();
+      reset();
+    });
+    root.addEventListener('pointercancel', ()=> reset());
+    root.addEventListener('pointerleave',  ()=> reset());
 
-    return state;
+    // начальное положение
+    setKnob(0,0);
+    return st;
   }
 
-  const joyLeft = makeJoystick(document.getElementById('joyLeft'), 50);   // поворот/направление
-  const joyRight = makeJoystick(document.getElementById('joyRight'), 40); // ходьба (горизонталь)
+  const joyLeft  = makeJoystick(document.getElementById('joyLeft'), 50); // поворот червя
+  const joyRight = makeJoystick(document.getElementById('joyRight'), 40); // ходьба кота
 
-  // ========= Worm Arena =========
+  // ===== Worm Arena (левый джойстик крутит направление)
   let worm, foods=[], stars=[];
   let wormColorMode = 'rainbow';
   selWormColor.addEventListener('change', ()=> wormColorMode = selWormColor.value);
@@ -215,12 +227,10 @@
   }
 
   function updateWorm(dt){
-    // управление: левый джойстик задаёт угол (по вектору)
+    // направление из левого джойстика
     if (joyLeft.active){
-      // atan2(ay, ax) — но у нас ось Y вниз, инвертируем:
       worm.angle = Math.atan2(joyLeft.ay, joyLeft.ax);
     }
-    // движение вперёд по направлению
     const spd = worm.speed * (hasBoost('speed')?1.5:1);
     worm.x += Math.cos(worm.angle)*spd*dt;
     worm.y += Math.sin(worm.angle)*spd*dt;
@@ -257,7 +267,7 @@
     }
   }
 
-  // конвертация HSL → RGB
+  // Радужная раскраска
   function hsl(h,s,l){
     s/=100; l/=100;
     const k = n => (n + h/30) % 12;
@@ -265,23 +275,19 @@
     const f = n => l - a * Math.max(-1, Math.min(k(n)-3, Math.min(9-k(n),1)));
     return `rgb(${Math.round(255*f(0))},${Math.round(255*f(8))},${Math.round(255*f(4))})`;
   }
-
   function drawWorm(){
     const W = canvas.clientWidth, H = canvas.clientHeight;
     ctx.fillStyle = '#0a0e19'; ctx.fillRect(0,0,W,H);
-    // фон-звёзды
     ctx.save(); ctx.globalAlpha=.6;
     for(let i=0;i<120;i++){ const x=(i*97)%W; const y=(i*53)%H; ctx.fillStyle=i%7===0?'#7dd3ff':'#cbd5e1'; ctx.fillRect(x,y,2,2); }
     ctx.restore();
-    // еда / бусты
     ctx.fillStyle='#63c8ff';
     foods.forEach(f=>{ ctx.beginPath(); ctx.arc(f.x,f.y,3.5,0,Math.PI*2); ctx.fill(); });
     stars.forEach(b=> drawStar(b.x,b.y,9,b.type));
-    // тело
     for(let s=0;s<worm.segments;s++){
       const idx = s*worm.step; const p = worm.trail[idx] || worm;
       const r = Math.max(3, 9 - s*0.08);
-      let color = '#f9a825'; // default
+      let color = '#f9a825';
       if (wormColorMode==='rainbow'){
         const hue = (s*12 + (performance.now()/40)%360) % 360;
         color = hsl(hue, 90, 55);
@@ -289,21 +295,21 @@
       else if (wormColorMode==='green') color='#7eed6b';
       else if (wormColorMode==='blue') color='#64b5ff';
       else if (wormColorMode==='purple') color='#c084fc';
-      // головной сегмент чуть ярче
       if (s===0 && wormColorMode!=='rainbow') color = '#ffd166';
       ctx.beginPath(); ctx.fillStyle = color;
       ctx.arc(p.x,p.y,r,0,Math.PI*2); ctx.fill();
     }
   }
 
-  // ========= Trampoline Cat =========
+  // ===== Trampoline Cat
   let cat, tramps=[], camY=0, maxY=0, catStars=[], jumpLatch=false;
+  let catJumpTapTimer = 0;
 
   function startCat(){
     resetHud();
     const W = canvas.clientWidth;
     cat = { x:W/2, y:200, vx:0, vy:0, onGround:false };
-    tramps = []; catStars = []; camY=0; maxY=0; jumpLatch=false;
+    tramps = []; catStars = []; camY=0; maxY=0; jumpLatch=false; catJumpTapTimer=0;
     for(let i=0;i<14;i++) addTramp(i===0 ? 230 : null);
     for(let i=0;i<3;i++) spawnCatBoost(Math.random()*600+200);
   }
@@ -319,30 +325,28 @@
     catStars.push({x: 60+Math.random()*(W-120), y: y-(Math.random()*200), r:10, type: ['speed','magnet','x2'][Math.floor(Math.random()*3)]});
   }
 
-  // Тап по канвасу = попытка прыжка (если не по джойстику)
+  // Тап по канвасу (кроме области джойстиков) = прыжок
+  function triggerCatTapJump(){ catJumpTapTimer = 0.12; }
   canvas.addEventListener('pointerdown', (e)=>{
     if (e.target.closest('.joy')) return;
-    // короткий импульс jump
-    catJumpTapTimer = 0.12; // секунды
-  });
-
-  let catJumpTapTimer = 0;
+    triggerCatTapJump();
+  }, {passive:false});
 
   function updateCat(dt){
     const W = canvas.clientWidth, H = canvas.clientHeight;
 
-    // управление: горизонталь от правого джойстика
+    // Горизонталь из правого джойстика (фикс: читается всегда, active не обязателен)
     const move = joyRight.ax; // -1..1
     const moveSpeed = hasBoost('speed') ? 240 : 180;
     cat.vx = move * moveSpeed;
 
-    // физика
+    // Физика
     cat.vy += 520*dt;
     cat.x += cat.vx*dt;
     cat.y += cat.vy*dt;
     cat.x = Math.max(16, Math.min(W-16, cat.x));
 
-    // платформы
+    // Платформы
     cat.onGround = false;
     for (const t of tramps){
       if (cat.vy > 0 && cat.y+8 >= t.y && cat.y+8 <= t.y+t.h && cat.x > t.x && cat.x < t.x+t.w){
@@ -350,12 +354,9 @@
       }
     }
 
-    // прыжок: тап по экрану или Space (с latch, чтобы не залипало)
+    // Прыжок: по тапу (таймер) + антизалипание
     if (catJumpTapTimer > 0) catJumpTapTimer -= dt;
-    const wantTapJump = catJumpTapTimer > 0;
-    const wantSpaceJump = false; // можно включить клавиатуру при желании
-    const wantJump = wantTapJump || wantSpaceJump;
-
+    const wantJump = catJumpTapTimer > 0;
     if (wantJump && cat.onGround && !jumpLatch){
       jumpLatch = true;
       cat.vy = -(hasBoost('speed') ? 18 : 14);
@@ -363,11 +364,9 @@
     }
     if (!wantJump) jumpLatch = false;
 
-    // камера
+    // Камера / спавн
     if (cat.y < maxY) maxY = cat.y;
     camY = Math.min(0, -maxY + H*0.28);
-
-    // спавн/рециклинг
     const highest = tramps.reduce((m,t)=> Math.min(m,t.y), tramps[0]?.y||0);
     while (highest - camY > -H*1.2 && tramps.length < 36) addTramp();
     for (let i=tramps.length-1;i>=0;i--){
@@ -378,7 +377,7 @@
       }
     }
 
-    // бусты
+    // Бусты
     for (let i=catStars.length-1;i>=0;i--){
       const b = catStars[i];
       let dx = b.x - cat.x, dy = (b.y - camY) - cat.y;
@@ -403,7 +402,7 @@
     drawCatAstronaut(cat.x, cat.y - camY);
   }
 
-  // ========= Рендер-утилиты =========
+  // ===== Рендер-утилиты
   function drawStar(x,y,r,type){
     ctx.save(); ctx.translate(x,y); ctx.rotate(performance.now()/800);
     ctx.beginPath();
@@ -424,7 +423,7 @@
     ctx.restore();
   }
 
-  // ========= Главный цикл =========
+  // ===== Главный цикл
   let last = performance.now(), paused = false;
   function loop(now){
     const dt = Math.min(0.033, (now - last)/1000); last = now;
