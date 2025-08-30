@@ -3,25 +3,55 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>KOSMOS.ARCADE — Worm & Cat (baseline)</title>
+<title>KOSMOS.ARCADE — Worm & Super Cat</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 body{background:#0b1020;color:#fff;font-family:system-ui,Arial;overflow:hidden}
-.top{position:fixed;left:0;right:0;top:0;display:flex;gap:8px;align-items:center;justify-content:space-between;padding:10px 12px;background:#0006;border-bottom:1px solid #ffffff18;z-index:5}
-.brand{font-weight:700}
-.row{display:flex;gap:8px;align-items:center}
+
+/* top bar */
+.top{position:fixed;left:0;right:0;top:0;display:flex;gap:8px;align-items:center;justify-content:space-between;
+     padding:10px 12px;background:#0006;border-bottom:1px solid #ffffff18;z-index:5;backdrop-filter:blur(6px)}
+.brand{font-weight:800;letter-spacing:.5px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .input,.btn,.chip{padding:8px 10px;border-radius:8px;border:1px solid #ffffff22;background:#ffffff10;color:#fff}
 .btn{cursor:pointer}
+.chip{font-weight:600}
+
+/* menu */
 .main{position:fixed;inset:56px 0 0 0;display:flex;align-items:center;justify-content:center}
-.menu{display:grid;gap:12px;max-width:520px;width:92%}
-.card{border:1px solid #ffffff22;border-radius:12px;padding:14px;background:#0f1630}
-.card h3{margin-bottom:6px}
+.menu{display:grid;gap:12px;max-width:820px;width:92%}
+.cards{display:grid;gap:12px;grid-template-columns:repeat(2,minmax(260px,1fr))}
+@media (max-width:720px){.cards{grid-template-columns:1fr}}
+.card{border:1px solid #ffffff22;border-radius:12px;padding:14px;background:
+  radial-gradient(140% 120% at 20% 0%,#182044 0%,transparent 60%),
+  #0f1630; box-shadow:0 10px 30px #0007}
+.card h3{margin-bottom:6px;font-weight:800;letter-spacing:.3px}
+.card p{opacity:.85;margin-bottom:10px}
+
+/* footer */
 .footer{position:fixed;left:0;right:0;bottom:0;text-align:center;color:#9aa1b6;font-size:12px;padding:6px 0;border-top:1px solid #ffffff18;background:#0006;z-index:5}
-.hud{position:fixed;inset:0;pointer-events:none;display:none;z-index:6}
+
+/* HUD: невидимые зоны */
+.hud{position:fixed;inset:0;pointer-events:auto;display:none;z-index:6}
 .hud.show{display:block}
-.hud .bigbtn{position:absolute;bottom:14px;width:80px;height:80px;border-radius:999px;border:1px solid #ffffff22;background:#ffffff14;color:#fff;font-size:22px;pointer-events:auto}
-#boost{right:14px} #left{left:14px} #right{left:112px}
+/* невидимая зона буста (слева внизу) */
+#boostArea{position:absolute;left:12px;bottom:12px;width:120px;height:120px;border-radius:999px;touch-action:none;opacity:0}
+/* направляющий джойстик — весь правый экран */
+#aimArea{position:absolute;right:0;top:0;bottom:0;width:55vw;touch-action:none;opacity:0}
+
+/* modal records */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);display:none;z-index:8;align-items:center;justify-content:center;padding:18px}
+.modal.show{display:flex}
+.box{width:min(640px,92vw);max-height:80vh;overflow:auto;border:1px solid #ffffff22;background:#0e152d;border-radius:12px}
+.box-head{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-bottom:1px solid #ffffff20}
+.box-title{font-weight:800}
+.box-body{padding:10px 12px}
+.table{width:100%;border-collapse:collapse}
+.table th,.table td{padding:8px 10px;border-bottom:1px solid #ffffff18;text-align:left}
+.table th{opacity:.8}
+
+/* show/hide menu */
 .hide-when-playing{display:block}
 .playing .hide-when-playing{display:none}
 </style>
@@ -30,121 +60,124 @@ body{background:#0b1020;color:#fff;font-family:system-ui,Arial;overflow:hidden}
 <header class="top">
   <div class="brand">KOSMOS.ARCADE</div>
   <div class="row">
-    <span>Имя</span><input id="playerName" class="input" value="Kosmos" maxlength="16" style="width:120px">
-    <span>Ботов</span><input id="botCount" class="input" type="number" min="0" max="20" value="6" style="width:64px">
+    <span>Имя</span><input id="playerName" class="input" value="Kosmos" maxlength="16" style="width:130px">
+    <span>Ботов</span><input id="botCount" class="input" type="number" min="0" max="30" value="12" style="width:68px">
     <div id="score" class="chip">0</div>
+    <button id="btnRecords" class="btn">Рекорды</button>
     <button id="toMenu" class="btn">В меню</button>
   </div>
 </header>
 
 <main class="main hide-when-playing">
   <div class="menu">
-    <div class="card">
-      <h3>🐍 Worm</h3>
-      <p>Большая карта, камера следует, 6 ботов, управление свайпом (невидимый джойстик).</p>
-      <button id="playWorm" class="btn">Играть</button>
-    </div>
-    <div class="card">
-      <h3>🐱 Super Cat (Jump)</h3>
-      <p>Полный кот, автопрыжки от платформ, управление невидимым джойстиком (свайп влево/вправо).</p>
-      <button id="playCat" class="btn">Играть</button>
+    <div style="margin-bottom:6px;opacity:.9">Выбирай режим</div>
+    <div class="cards">
+      <div class="card">
+        <h3>🐍 Worm</h3>
+        <p>Большая карта, <b>плавное свечение</b>, боты-планеты с регеном, предметы: 💣 🏵️ 🌈 ☢️. Управление: <b>правый свайп-джойстик</b>, <b>левый круг — буст</b>.</p>
+        <button id="playWorm" class="btn">Играть</button>
+      </div>
+      <div class="card">
+        <h3>🐱 Super Cat (Jump)</h3>
+        <p>Полный кот в скафандре, автопрыжки, невидимый джойстик справа. (Без изменений.)</p>
+        <button id="playCat" class="btn">Играть</button>
+      </div>
     </div>
   </div>
 </main>
 
-<footer class="footer hide-when-playing">baseline сборка — чтобы точно работало</footer>
+<footer class="footer hide-when-playing">smooth glow + fat growth + invisible controls</footer>
 
-<!-- HUD для игр -->
+<!-- HUD: невидимые зоны -->
 <div id="hud" class="hud">
-  <button id="left"  class="bigbtn">◀</button>
-  <button id="right" class="bigbtn">▶</button>
-  <button id="boost" class="bigbtn">⚡</button>
+  <div id="boostArea" title="Ускорение"></div>
+  <div id="aimArea"   title="Направление"></div>
+</div>
+
+<!-- Records modal -->
+<div id="recModal" class="modal">
+  <div class="box">
+    <div class="box-head">
+      <div class="box-title">Таблица рекордов</div>
+      <button id="closeRec" class="btn">Закрыть</button>
+    </div>
+    <div class="box-body">
+      <h4 style="margin:6px 0">Worm</h4>
+      <table class="table"><thead><tr><th>#</th><th>Имя</th><th>Очки</th></tr></thead><tbody id="tbodyWorm"></tbody></table>
+      <h4 style="margin:12px 0 6px">Super Cat</h4>
+      <table class="table"><thead><tr><th>#</th><th>Имя</th><th>Очки</th></tr></thead><tbody id="tbodyCat"></tbody></table>
+    </div>
+  </div>
 </div>
 
 <script>
-/* ===== общие утилиты ===== */
+/* ===== общие утилиты + рекорды ===== */
 const $ = s => document.querySelector(s);
 const on = (el,ev,fn,opt)=>el&&el.addEventListener(ev,fn,opt);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const rand =(a,b)=>a+Math.random()*(b-a);
+const REC_W='kosmos_records_worm', REC_C='kosmos_records_cat';
+function pushRec(key,name,score,limit=10){const a=JSON.parse(localStorage.getItem(key)||'[]');a.push({name,score,ts:Date.now()});a.sort((x,y)=>y.score-x.score);localStorage.setItem(key,JSON.stringify(a.slice(0,limit)));}
+function fillTable(key,tbody){const a=JSON.parse(localStorage.getItem(key)||'[]');tbody.innerHTML=a.map((r,i)=>`<tr><td>${i+1}</td><td>${r.name}</td><td>${r.score}</td></tr>`).join('')||'<tr><td colspan="3" style="opacity:.7">Пока пусто</td></tr>';}
+on($('#btnRecords'),'click',()=>{fillTable(REC_W,$('#tbodyWorm'));fillTable(REC_C,$('#tbodyCat'));$('#recModal').classList.add('show');});
+on($('#closeRec'),'click',()=>$('#recModal').classList.remove('show'));
 
-/* ===== Глобальные кнопки ===== */
+/* ===== кнопка "В меню" ===== */
 on($('#toMenu'),'click',()=>{ stopWorm(false); stopCat(false); document.body.classList.remove('playing'); $('#hud').classList.remove('show'); });
 
 /* =======================================================================
-   WORM — простой, надёжный вариант
+   WORM — гладкая отрисовка кругами + рост толщины + новые зоны управления
    ======================================================================= */
 let wCanvas=null,wCtx=null,wRAF=null,wRun=false;
-const WCFG={WORLD:2600,SPEED:2.3,TURN:0.1,SEG:8,R:12,FOOD:4};
-const wTouch={on:false,sx:0,sy:0,ex:0,ey:0};
+const WCFG={WORLD:3400,SPEED:2.35,BOOST:1.55,TURN:0.11,SEG:8,FOOD_R:4,FOOD_TARGET:170};
+const wTouch={on:false,sx:0,sy:0,ex:0,ey:0}; // используется только для правой зоны
 let wSnakes=[], wFoods=[], wMe=null, wScore=0, wBoost=false;
-const wCam={x:0,y:0,zoom:1};
+const wCam={x:0,y:0};
+const PLANETS=["Марс","Земля","Юпитер","Венера","Сатурн","Нептун","Меркурий","Уран","Плутон","Европа","Ио","Титан","Ганимед","Каллисто","Тритон"];
+const COLORS=['#6bf2ff','#7eff6b','#ff6be6','#ffaa6b','#7aa3ff','#ffd86b'];
+const FOOD_TYPES=['dot','bomb','flower','rainbow','rad','mass']; // mass — мясо от убитых
+const FOOD_PROB ={dot:0.90,bomb:0.02,flower:0.03,rainbow:0.03,rad:0.02};
 
 function wHead(s){return s.segs[0];}
 function wDist2(a,b){const dx=a.x-b.x,dy=a.y-b.y;return dx*dx+dy*dy;}
+function lerp(a,b,t){return a+(b-a)*t;}
 function wLerpAng(a,b,t){let d=((b-a+Math.PI*3)%(Math.PI*2))-Math.PI;return a+d*t;}
+const rndColor=()=>COLORS[Math.floor(Math.random()*COLORS.length)];
 
 function wNewSnake(x,y,isP=false,name='bot',color='#6bf2ff'){
-  const dir=Math.random()*Math.PI*2, s={isP,alive:true,name,color,dir,r:WCFG.R,segs:[],grow:0};
-  for(let i=0;i<28;i++) s.segs.push({x:x-i*WCFG.SEG*Math.cos(dir),y:y-i*WCFG.SEG*Math.sin(dir)});
+  const dir=Math.random()*Math.PI*2;
+  const s={isP,alive:true,name,color,dir,segs:[],grow:0,baseR:12,fatUntil:0,radUntil:0,radShrink:0};
+  const L=28+Math.floor(Math.random()*10);
+  for(let i=0;i<L;i++) s.segs.push({x:x-i*WCFG.SEG*Math.cos(dir),y:y-i*WCFG.SEG*Math.sin(dir)});
   return s;
 }
 
 function wSpawn(){
   wSnakes=[]; wFoods=[];
   const meName=($('#playerName').value||'Kosmos').slice(0,16);
-  wMe = wNewSnake(rand(600,1000),rand(600,1000),true,meName,'#6bf2ff');
-  wSnakes.push(wMe);
-  const planets=["Марс","Земля","Юпитер","Венера","Сатурн","Нептун","Уран"];
-  const n = clamp(parseInt($('#botCount').value||6,10),0,20);
-  for(let i=0;i<n;i++){ wSnakes.push(wNewSnake(rand(200,WCFG.WORLD-200),rand(200,WCFG.WORLD-200),false, planets[i%planets.length], ['#7eff6b','#ffaa6b','#7aa3ff','#ffd86b'][i%4])); }
-  for(let i=0;i<120;i++) wFoods.push({x:rand(40,WCFG.WORLD-40),y:rand(40,WCFG.WORLD-40)});
+  wMe = wNewSnake(rand(900,1400),rand(900,1400),true,meName,'#6bf2ff');
+  wSnakes.push(wMe); wSpawnBots();
+  for(let i=0;i<140;i++) wFoods.push(wMakeFood());
   wScore=0; $('#score').textContent=0;
 }
 
-function wResize(){ wCanvas.width=innerWidth; wCanvas.height=innerHeight; }
-function wUpdate(){
-  // управление игроком
-  if(wTouch.on){
-    const a=Math.atan2(wTouch.ey-wTouch.sy, wTouch.ex-wTouch.sx);
-    if(isFinite(a)) wMe.dir = wLerpAng(wMe.dir, a, WCFG.TURN*2);
+function wSpawnBots(){
+  const need = clamp(parseInt($('#botCount').value||12,10),0,30);
+  while (wSnakes.filter(s=>!s.isP&&s.alive).length<need){
+    const name = PLANETS[Math.floor(Math.random()*PLANETS.length)];
+    const col  = COLORS[Math.floor(Math.random()*COLORS.length)];
+    wSnakes.push(wNewSnake(rand(200,WCFG.WORLD-200),rand(200,WCFG.WORLD-200),false,name,col));
   }
-  const v = wBoost? WCFG.SPEED*1.5 : WCFG.SPEED;
-
-  // апдейт всех
-  for(const s of wSnakes){
-    if(!s.alive) continue;
-    if(!s.isP){ s.dir += rand(-WCFG.TURN*0.4, WCFG.TURN*0.4); }
-    const nx=wHead(s).x+Math.cos(s.dir)*v, ny=wHead(s).y+Math.sin(s.dir)*v;
-    s.segs.unshift({x:nx,y:ny});
-    if(s.segs.length>28+s.grow) s.segs.pop();
-
-    // еда
-    for(let i=wFoods.length-1;i>=0;i--){
-      const f=wFoods[i];
-      if(wDist2(wHead(s),f)<(s.r+WCFG.FOOD)**2){
-        wFoods.splice(i,1); s.grow+=4;
-        if(s.isP){ wScore++; $('#score').textContent=wScore; }
-      }
-    }
-    // края мира
-    const h=wHead(s); if(h.x<0)h.x+=WCFG.WORLD; if(h.x>WCFG.WORLD)h.x-=WCFG.WORLD; if(h.y<0)h.y+=WCFG.WORLD; if(h.y>WCFG.WORLD)h.y-=WCFG.WORLD;
-  }
-
-  // простая коллизия голова/тело
-  for(const a of wSnakes){
-    if(!a.alive) continue;
-    for(const b of wSnakes){
-      if(a===b || !b.alive) continue;
-      const R2=(a.r+b.r*0.9)**2, H=wHead(a);
-      for(const seg of b.segs){
-        if(wDist2(H,seg)<=R2){ a.alive=false; if(a.isP) stopWorm(true); break; }
-      }
-    }
-  }
-  wSnakes = wSnakes.filter(s=>s.alive);
 }
 
+function wMakeFood(){
+  const r=Math.random(); let type='dot',acc=0;
+  for(const t of FOOD_TYPES){acc+=FOOD_PROB[t]; if(r<=acc){type=t;break;}}
+  return {x:rand(40,WCFG.WORLD-40), y:rand(40,WCFG.WORLD-40), type, sz:1};
+}
+function wEnsureFood(){ while(wFoods.length<WCFG.FOOD_TARGET) wFoods.push(wMakeFood()); }
+
+function wResize(){ wCanvas.width=innerWidth; wCanvas.height=innerHeight; }
 function wCamUpdate(){
   if(!wMe) return;
   wCam.x = wHead(wMe).x - wCanvas.width/2;
@@ -153,45 +186,158 @@ function wCamUpdate(){
   wCam.y = clamp(wCam.y, 0, WCFG.WORLD-wCanvas.height);
 }
 
-function wDraw(){
-  const ctx=wCtx;
-  ctx.setTransform(1,0,0,1,0,0);
-  ctx.clearRect(0,0,wCanvas.width,wCanvas.height);
-  ctx.translate(-wCam.x,-wCam.y);
-  ctx.fillStyle='#06101a'; ctx.fillRect(wCam.x,wCam.y,wCanvas.width,wCanvas.height);
+let lastTs=0;
+function wUpdate(ts){
+  if(!lastTs) lastTs=ts;
+  const dt = Math.min(32, ts - lastTs); // мс, кап
+  lastTs = ts;
 
-  // еда
-  ctx.fillStyle='#00ffd5';
-  for(const f of wFoods){ ctx.beginPath(); ctx.arc(f.x,f.y,WCFG.FOOD,0,Math.PI*2); ctx.fill(); }
+  // управление (только правая зона)
+  if(wTouch.on){
+    const a=Math.atan2(wTouch.ey-wTouch.sy, wTouch.ex-wTouch.sx);
+    if(isFinite(a)) wMe.dir = wLerpAng(wMe.dir, a, WCFG.TURN * (dt/16)*1.6);
+  }
 
-  // змеи
   for(const s of wSnakes){
-    ctx.lineWidth=s.r*2; ctx.lineCap='round';
-    ctx.beginPath(); ctx.moveTo(s.segs[0].x,s.segs[0].y);
-    for(const p of s.segs) ctx.lineTo(p.x,p.y);
-    ctx.strokeStyle=s.color; ctx.stroke();
+    if(!s.alive) continue;
+    if(!s.isP){ s.dir = wLerpAng(s.dir, s.dir + rand(-0.3,0.3), 0.04*(dt/16)); }
 
-    // глаза
-    const h=wHead(s), dpx=Math.cos(s.dir), dpy=Math.sin(s.dir), nx=-dpy, ny=dpx, off=s.r*.6, eye=s.r*.45;
-    ctx.beginPath(); ctx.fillStyle='#fff';
-    ctx.arc(h.x+nx*off+dpx*.6, h.y+ny*off+dpy*.6, eye, 0, Math.PI*2);
-    ctx.arc(h.x-nx*off+dpx*.6, h.y-ny*off+dpy*.6, eye, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.fillStyle='#111';
-    ctx.arc(h.x+nx*off+dpx*1.0, h.y+ny*off+dpy*1.0, eye*.45, 0, Math.PI*2);
-    ctx.arc(h.x-nx*off+dpx*1.0, h.y-ny*off+dpy*1.0, eye*.45, 0, Math.PI*2); ctx.fill();
+    // текущий радиус с эффектами
+    const now=performance.now();
+    const targetR = (now<s.fatUntil ? s.baseR*1.8 : s.baseR);
+    const radCut  = (now<s.radUntil ? (0.5 + s.radShrink*0.5) : 1); // сжимается
+    s.baseR = clamp(s.baseR, 10, 30); // ограничение толщины
+    s.r = clamp(targetR*radCut, 8, 34);
 
-    // ник (чёткий)
-    ctx.font='600 13px system-ui,Arial'; ctx.textAlign='center'; ctx.textBaseline='bottom';
-    ctx.fillStyle='#e7f7ff'; ctx.strokeStyle='#08121f'; ctx.lineWidth=2;
-    const nxp=Math.round(h.x)+0.5, nyp=Math.round(h.y-s.r*1.7)+0.5;
-    ctx.strokeText(s.name,nxp,nyp); ctx.fillText(s.name,nxp,nyp);
+    const speed = (s.isP && wBoost ? WCFG.SPEED*WCFG.BOOST : WCFG.SPEED) * (dt/16);
+    const nx=wHead(s).x+Math.cos(s.dir)*speed, ny=wHead(s).y+Math.sin(s.dir)*speed;
+    s.segs.unshift({x:nx,y:ny});
+    // рост длины: растёт немного всегда, сильнее от "мяса"
+    if(s.grow>0) s.grow--; else if(s.segs.length>28) s.segs.pop();
+
+    // еда/предметы
+    for(let i=wFoods.length-1;i>=0;i--){
+      const f=wFoods[i];
+      const rr = (s.r + (f.type==='mass'? 6 : WCFG.FOOD_R) + 4);
+      if(wDist2(wHead(s),f) < rr*rr){
+        wFoods.splice(i,1);
+        if(f.type==='dot'){ s.grow+=5; if(s.isP){wScore++; $('#score').textContent=wScore;} }
+        else if(f.type==='bomb'){ s.alive=false; if(s.isP) return stopWorm(true); }
+        else if(f.type==='flower'){ s.fatUntil = now+15000; }
+        else if(f.type==='rainbow'){ s.color = rndColor(); }
+        else if(f.type==='rad'){ s.radUntil = now+10000; s.radShrink=0; }
+        else if(f.type==='mass'){ 
+          // именно от «мяса» растёт толщина сильнее
+          s.baseR = clamp(s.baseR + 0.45*f.sz, 10, 34);
+          s.grow += Math.ceil(4*f.sz);
+          if(s.isP){ wScore += 3*f.sz|0; $('#score').textContent=wScore; }
+        }
+      }
+    }
+
+    // край мира
+    const h=wHead(s); if(h.x<0)h.x+=WCFG.WORLD; if(h.x>WCFG.WORLD)h.x-=WCFG.WORLD; if(h.y<0)h.y+=WCFG.WORLD; if(h.y>WCFG.WORLD)h.y-=WCFG.WORLD;
+  }
+
+  // столкновения голова/тело
+  for(const a of wSnakes){
+    if(!a.alive) continue;
+    for(const b of wSnakes){
+      if(a===b || !b.alive) continue;
+      const R2=(a.r + b.r*0.85)**2, H=wHead(a);
+      for(const seg of b.segs){
+        if(wDist2(H,seg)<=R2){
+          a.alive=false; // проиграл
+          if(a.isP) return stopWorm(true);
+          // тушка превращается в «мясо» (уменьшение визуально)
+          dropMeat(a);
+          break;
+        }
+      }
+    }
+  }
+
+  // чистка и реген
+  wSnakes = wSnakes.filter(s=>s.alive);
+  wSpawnBots(); wEnsureFood();
+}
+
+function dropMeat(s){
+  for(let i=0;i<s.segs.length;i+=2){
+    const p=s.segs[i];
+    wFoods.push({x:p.x,y:p.y,type:'mass',sz:1});
   }
 }
 
-function wStep(){
+function wDrawFood(f){
+  const ctx=wCtx;
+  ctx.save(); ctx.textBaseline='middle'; ctx.textAlign='center';
+  if(f.type==='dot'){
+    ctx.beginPath(); ctx.arc(f.x,f.y,WCFG.FOOD_R,0,Math.PI*2);
+    ctx.fillStyle='#00ffd5'; ctx.shadowBlur=12; ctx.shadowColor='#00ffd5'; ctx.fill();
+  } else if(f.type==='mass'){
+    ctx.beginPath(); ctx.arc(f.x,f.y,6*f.sz,0,Math.PI*2);
+    ctx.fillStyle='#ffd36b'; ctx.shadowBlur=14; ctx.shadowColor='#ffd36b'; ctx.fill();
+  } else {
+    ctx.font='20px "Apple Color Emoji","Segoe UI Emoji",system-ui'; const map={bomb:'💣',flower:'🏵️',rainbow:'🌈',rad:'☢️'};
+    ctx.fillText(map[f.type]||'❓',f.x,f.y+1);
+  }
+  ctx.restore();
+}
+
+/* рисуем змей как набор кругов -> нет полос и разрывов */
+function drawSnakeSmooth(s){
+  const ctx=wCtx, now=performance.now();
+  // glow
+  ctx.save();
+  ctx.globalCompositeOperation='lighter';
+  ctx.shadowColor = (now<s.radUntil? '#8cff7a' : s.color);
+  ctx.shadowBlur = 20;
+  for(let i=0;i<s.segs.length;i+=2){
+    const p=s.segs[i];
+    ctx.beginPath(); ctx.arc(p.x,p.y,s.r,0,Math.PI*2); ctx.fillStyle=s.color; ctx.fill();
+  }
+  ctx.restore();
+  // тело
+  for(let i=0;i<s.segs.length;i+=1){
+    const p=s.segs[i];
+    ctx.beginPath(); ctx.arc(p.x,p.y,s.r,0,Math.PI*2); ctx.fillStyle=s.color; ctx.fill();
+  }
+  // глаза + ник
+  const h=wHead(s), dpx=Math.cos(s.dir), dpy=Math.sin(s.dir), nx=-dpy, ny=dpx, off=s.r*.6, eye=s.r*.45;
+  // глаза
+  ctx.beginPath(); ctx.fillStyle='#fff';
+  ctx.arc(h.x+nx*off+dpx*.6, h.y+ny*off+dpy*.6, eye, 0, Math.PI*2);
+  ctx.arc(h.x-nx*off+dpx*.6, h.y-ny*off+dpy*.6, eye, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.fillStyle='#111';
+  ctx.arc(h.x+nx*off+dpx*1.0, h.y+ny*off+dpy*1.0, eye*.45, 0, Math.PI*2);
+  ctx.arc(h.x-nx*off+dpx*1.0, h.y-ny*off*dpy*1.0, eye*.45, 0, Math.PI*2); ctx.fill();
+  // ник — чёткий
+  wCtx.font='600 13px system-ui,Arial'; wCtx.textAlign='center'; wCtx.textBaseline='bottom';
+  wCtx.fillStyle='#e7f7ff'; wCtx.strokeStyle='#08121f'; wCtx.lineWidth=2;
+  const nxp=Math.round(h.x)+0.5, nyp=Math.round(h.y - s.r*1.7)+0.5;
+  wCtx.strokeText(s.name,nxp,nyp); wCtx.fillText(s.name,nxp,nyp);
+}
+
+function wDraw(){
+  const ctx=wCtx;
+  ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0,0,wCanvas.width,wCanvas.height);
+  ctx.translate(-wCam.x,-wCam.y);
+
+  // фон
+  ctx.fillStyle='#06101a'; ctx.fillRect(wCam.x,wCam.y,wCanvas.width,wCanvas.height);
+
+  // еда
+  for(const f of wFoods) wDrawFood(f);
+
+  // змеи
+  for(const s of wSnakes) drawSnakeSmooth(s);
+}
+
+function wStep(ts){
   if(!wRun) return;
-  wUpdate(); wCamUpdate(); wDraw();
-  wRAF = requestAnimationFrame(wStep);
+  wUpdate(ts); wCamUpdate(); wDraw();
+  wRAF=requestAnimationFrame(wStep);
 }
 
 function startWorm(){
@@ -199,27 +345,36 @@ function startWorm(){
   document.body.classList.add('playing'); $('#hud').classList.add('show');
   wCanvas=document.createElement('canvas'); wCanvas.style.position='fixed'; wCanvas.style.inset='0'; wCanvas.style.zIndex='3'; wCanvas.style.touchAction='none';
   document.body.appendChild(wCanvas); wCtx=wCanvas.getContext('2d'); wRun=true; wResize(); addEventListener('resize',wResize);
-  wSpawn(); wRAF=requestAnimationFrame(wStep);
+  wSpawn(); lastTs=0; wRAF=requestAnimationFrame(wStep);
 }
 function stopWorm(save=false){
   if(!wRun) return;
   wRun=false; cancelAnimationFrame(wRAF); removeEventListener('resize',wResize);
   wCanvas.remove(); document.body.classList.remove('playing'); $('#hud').classList.remove('show');
+  if(save && wMe) pushRec(REC_W, wMe.name, wScore);
 }
+
+/* --- управление: правый джойстик + левый невидимый буст --- */
+const aim = $('#aimArea'), boostArea = $('#boostArea');
+let aimId=null, boostId=null;
+
+function aimStart(e){ const t=e.changedTouches?e.changedTouches[0]:e; if(t.clientX < innerWidth*0.45) return; aimId=t.identifier??'mouse'; wTouch.on=true; wTouch.sx=wTouch.ex=t.clientX; wTouch.sy=wTouch.ey=t.clientY; }
+function aimMove (e){ for(const t of (e.changedTouches||[e])){ const id=t.identifier??'mouse'; if(id!==aimId) continue; wTouch.ex=t.clientX; wTouch.ey=t.clientY; } }
+function aimEnd  (e){ for(const t of (e.changedTouches||[e])){ const id=t.identifier??'mouse'; if(id===aimId){ wTouch.on=false; aimId=null; } } }
+
+function boostStart(e){ const t=e.changedTouches?e.changedTouches[0]:e; boostId=t.identifier??'mouse'; wBoost=true; e.preventDefault(); }
+function boostEnd  (e){ for(const t of (e.changedTouches||[e])){ const id=t.identifier??'mouse'; if(id===boostId){ wBoost=false; boostId=null; } } }
+
+on(aim,'touchstart',aimStart,{passive:false}); on(aim,'touchmove',aimMove,{passive:true}); on(aim,'touchend',aimEnd,{passive:true});
+on(aim,'mousedown',aimStart); on(aim,'mousemove',aimMove); on(aim,'mouseup',aimEnd);
+
+on(boostArea,'touchstart',boostStart,{passive:false}); on(boostArea,'touchend',boostEnd,{passive:true});
+on(boostArea,'mousedown',boostStart); on(boostArea,'mouseup',boostEnd);
 
 on($('#playWorm'),'click',startWorm);
 
-/* управление worm */
-function wJoyStart(e){const t=e.touches?e.touches[0]:e; wTouch.on=true; wTouch.sx=wTouch.ex=t.clientX; wTouch.sy=wTouch.ey=t.clientY;}
-function wJoyMove (e){if(!wTouch.on)return; const t=e.touches?e.touches[0]:e; wTouch.ex=t.clientX; wTouch.ey=t.clientY;}
-function wJoyEnd  (){wTouch.on=false;}
-on(document,'touchstart',wJoyStart,{passive:true}); on(document,'touchmove',wJoyMove,{passive:true}); on(document,'touchend',wJoyEnd,{passive:true});
-on(document,'mousedown',wJoyStart); on(document,'mousemove',wJoyMove); on(document,'mouseup',wJoyEnd);
-on($('#boost'),'touchstart',()=>wBoost=true,{passive:true}); on($('#boost'),'touchend',()=>wBoost=false,{passive:true});
-on($('#boost'),'mousedown',()=>wBoost=true); on(window,'mouseup',()=>wBoost=false);
-
 /* =======================================================================
-   SUPER CAT — простой, стабильный вариант (полное тело + платформы)
+   SUPER CAT — оставлен как в рабочей версии (невидимый джойстик справа)
    ======================================================================= */
 let cCanvas=null,cCtx=null,cRAF=null,cRun=false;
 const cat={x:0,y:0,vx:0,vy:-8,w:36,h:46,face:1};
@@ -254,7 +409,7 @@ function cPhys(){
       }
     }
   }
-  camY = Math.min(camY, cat.y - innerHeight*0.45);
+  camY = Math.min(camY,cat.y-innerHeight*0.45);
   cScore = Math.max(cScore, Math.round(-(cat.y-0)));
   $('#score').textContent = cScore;
 }
@@ -265,8 +420,7 @@ function cDrawCat(){
   ctx.save(); ctx.translate(x - f*w*0.35, y + h*0.05); ctx.rotate(Math.sin(performance.now()/150)*0.2*f);
   ctx.beginPath(); ctx.ellipse(0,0, w*0.28, h*0.18, 0, 0, Math.PI*2); ctx.fillStyle='#f7c38b'; ctx.fill(); ctx.restore();
   // тело
-  ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x - w*0.35, y - h*0.4, w*0.7, h*0.8, 12);
-  else ctx.rect(x - w*0.35, y - h*0.4, w*0.7, h*0.8);
+  ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x - w*0.35, y - h*0.4, w*0.7, h*0.8, 12); else ctx.rect(x - w*0.35, y - h*0.4, w*0.7, h*0.8);
   ctx.fillStyle='#ffd9a8'; ctx.fill();
   // лапы
   const step=Math.sin(performance.now()/120)*3; ctx.fillStyle='#ffc891';
@@ -277,7 +431,7 @@ function cDrawCat(){
   // ушки
   ctx.beginPath(); ctx.moveTo(x - w*0.28, y - h*0.76); ctx.lineTo(x - w*0.14, y - h*0.98); ctx.lineTo(x - w*0.02, y - h*0.70); ctx.closePath(); ctx.fillStyle='#ffb77a'; ctx.fill();
   ctx.beginPath(); ctx.moveTo(x + w*0.28, y - h*0.76); ctx.lineTo(x + w*0.14, y - h*0.98); ctx.lineTo(x + w*0.02, y - h*0.70); ctx.closePath(); ctx.fillStyle='#ffb77a'; ctx.fill();
-  // лицо
+  // глаза/нос
   const ex=x+f*w*0.10; ctx.beginPath(); ctx.fillStyle='#222';
   ctx.arc(ex - w*0.12, y - h*0.58, 3.6, 0, Math.PI*2);
   ctx.arc(ex + w*0.12, y - h*0.58, 3.6, 0, Math.PI*2); ctx.fill();
@@ -286,10 +440,8 @@ function cDrawCat(){
 
 function cDraw(){
   const ctx=cCtx; ctx.clearRect(0,0,cCanvas.width,cCanvas.height);
-  // фон
   const g=ctx.createLinearGradient(0,0,0,innerHeight); g.addColorStop(0,'#0c1430'); g.addColorStop(1,'#091224');
   ctx.fillStyle=g; ctx.fillRect(0,0,cCanvas.width,cCanvas.height);
-  // платформы
   for(const p of plats){ const y=p.y-camY; if(y<-40||y>innerHeight+40) continue;
     ctx.fillStyle = p.type==='solid' ? '#21d1a3' : (p.type==='move' ? '#2db3ff' : '#ff7676');
     ctx.fillRect(p.x,y,p.w,10);
@@ -311,24 +463,20 @@ function stopCat(save=false){
   if(!cRun) return;
   cRun=false; cancelAnimationFrame(cRAF); removeEventListener('resize',cResize);
   cCanvas.remove(); document.body.classList.remove('playing'); $('#hud').classList.remove('show');
+  if(save){ const n=($('#playerName').value||'Kosmos').slice(0,16); pushRec(REC_C,n,cScore); }
 }
 
-/* управление cat — невидимый джойстик + кнопки */
-function cJoyStart(e){const t=e.touches?e.touches[0]:e; cJoy.on=true; cJoy.sx=cJoy.ex=t.clientX; cJoy.sy=cJoy.ey=t.clientY;}
-function cJoyMove (e){if(!cJoy.on)return; const t=e.touches?e.touches[0]:e; cJoy.ex=t.clientX; cJoy.ey=t.clientY;}
-function cJoyEnd  (){cJoy.on=false;}
+/* управление cat — правый джойстик */
+function cJoyStart(e){ const t=e.changedTouches?e.changedTouches[0]:e; if(t.clientX<innerWidth*0.45) return; cJoy.on=true; cJoy.sx=cJoy.ex=t.clientX; cJoy.sy=cJoy.ey=t.clientY; }
+function cJoyMove (e){ for(const t of (e.changedTouches||[e])){ if(!cJoy.on) continue; cJoy.ex=t.clientX; cJoy.ey=t.clientY; } }
+function cJoyEnd  (){ cJoy.on=false; }
 function bindCatJoy(){
-  on(document,'touchstart',cJoyStart,{passive:true}); on(document,'touchmove',cJoyMove,{passive:true}); on(document,'touchend',cJoyEnd,{passive:true});
-  on(document,'mousedown',cJoyStart); on(document,'mousemove',cJoyMove); on(document,'mouseup',cJoyEnd);
-  on($('#left'),'touchstart',()=>{cJoy.on=true;cJoy.sx=innerWidth*0.25;cJoy.ex=cJoy.sx-60;},{passive:true});
-  on($('#left'),'touchend',()=>{cJoy.on=false;},{passive:true});
-  on($('#right'),'touchstart',()=>{cJoy.on=true;cJoy.sx=innerWidth*0.75;cJoy.ex=cJoy.sx+60;},{passive:true});
-  on($('#right'),'touchend',()=>{cJoy.on=false;},{passive:true});
-  on($('#left'),'mousedown',()=>{cJoy.on=true;cJoy.sx=innerWidth*0.25;cJoy.ex=cJoy.sx-60;});
-  on($('#right'),'mousedown',()=>{cJoy.on=true;cJoy.sx=innerWidth*0.75;cJoy.ex=cJoy.sx+60;});
-  on(window,'mouseup',()=>{cJoy.on=false;});
+  const aim=$('#aimArea');
+  on(aim,'touchstart',cJoyStart,{passive:false}); on(aim,'touchmove',cJoyMove,{passive:true}); on(aim,'touchend',cJoyEnd,{passive:true});
+  on(aim,'mousedown',cJoyStart); on(aim,'mousemove',cJoyMove); on(aim,'mouseup',cJoyEnd);
 }
 
+/* старт */
 on($('#playCat'),'click',startCat);
 </script>
 </body>
