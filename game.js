@@ -146,7 +146,7 @@
     camera.y = clamp(camera.y, 0, CFG.worldSize-camera.vh);
   }
 
-  // сглаженная линия из точек (как «кишечка»)
+  // сглаженная линия из точек (как «труба»)
   function drawSmoothPath(points){
     if (points.length<2) return;
     ctx.beginPath();
@@ -186,14 +186,14 @@
     lg.addColorStop(0.5, s.color);
     lg.addColorStop(1,   darken(s.color, 0.18));
 
-    // ТЕНЬ/СВЕЧЕНИЕ
+    // свечение
     drawGlowLayer(()=>{ ctx.lineWidth = r*2; drawSmoothPath(s.segs); ctx.strokeStyle=s.color; ctx.stroke(); }, s.color, 24);
 
-    // ОСНОВНОЕ ТЕЛО (гладкая «труба»)
+    // основное тело
     ctx.lineCap='round'; ctx.lineJoin='round';
     ctx.lineWidth = r*2; drawSmoothPath(s.segs); ctx.strokeStyle = lg; ctx.stroke();
 
-    // БЛИК СВЕРХУ
+    // блик сверху
     ctx.save();
     ctx.globalCompositeOperation='screen';
     ctx.lineWidth = r*1.15;
@@ -204,7 +204,7 @@
     drawSmoothPath(s.segs); ctx.stroke();
     ctx.restore();
 
-    // ТОЧКИ ПО БОКУ (как «узоры»)
+    // точки-узоры
     for (let i=2; i<s.segs.length-2; i+=4){
       const p0=s.segs[i-1], p1=s.segs[i+1];
       const dx=p1.x-p0.x, dy=p1.y-p0.y;
@@ -219,7 +219,7 @@
       ctx.globalCompositeOperation='source-over';
     }
 
-    // ГОЛОВА: белок + зрачки + «нос»
+    // голова: глаза + «нос»
     const head = s.head();
     const dpx = Math.cos(s.dir), dpy = Math.sin(s.dir);
     const nx = -dpy, ny = dpx;
@@ -286,7 +286,6 @@
 
   // ── main draw
   function draw(){
-    // экран → мировые координаты
     ctx.setTransform(1,0,0,1,0,0);
     ctx.clearRect(0,0,canvas.width,canvas.height);
     ctx.scale(camera.zoom, camera.zoom);
