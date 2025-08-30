@@ -5,8 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>KOSMOS.ARCADE — Worm & Cat</title>
 <meta name="theme-color" content="#0b1020" />
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -25,44 +23,46 @@ body{font-family:'Inter',system-ui,Arial;background:#0b1020;color:#fff;overflow:
 .btn:hover{background:rgba(255,255,255,.15)}
 .btn:active{transform:scale(.96)}
 
-.main{max-width:1100px;margin:0 auto;padding:24px;display:flex;gap:24px;align-items:center;justify-content:space-between}
+.main{max-width:1100px;margin:0 auto;padding:24px;display:flex;flex-direction:column;gap:24px}
 .h1{font-family:'Russo One',sans-serif;font-size:clamp(28px,6vw,56px);text-shadow:0 0 8px #39f3ff,0 0 18px #39f3ff}
 .p{margin:14px 0 18px;color:#cbd3ff99;line-height:1.6;max-width:720px}
-.modes{display:flex;gap:14px}
-.mode{flex:1;min-width:160px;padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,.1);
-      background:linear-gradient(145deg,#151c3a,#0a0f20);display:flex;flex-direction:column;align-items:center;gap:6px}
-.mode .ico{font-size:28px}
-.art{flex:1;position:relative}
-.art .box{height:300px;border-radius:14px;background:linear-gradient(135deg,#1a2242,#0d1326);box-shadow:0 0 18px #39f3ff33}
-.art .shine{position:absolute;inset:0;border-radius:14px;pointer-events:none;background:linear-gradient(135deg,rgba(255,255,255,.12),transparent 60%)}
+
+/* Cards */
+.cards{display:grid;gap:18px;grid-template-columns:repeat(2,minmax(260px,1fr))}
+@media(max-width:820px){.cards{grid-template-columns:1fr}}
+.card{overflow:hidden;border-radius:16px;background:linear-gradient(145deg,#151c3a,#0a0f20);
+      border:1px solid rgba(255,255,255,.10);box-shadow:0 10px 30px #00000055,inset 0 0 0 1px #ffffff08;
+      transition:transform .18s ease,box-shadow .2s ease}
+.card:hover{transform:translateY(-2px);box-shadow:0 16px 40px #00000070,inset 0 0 0 1px #ffffff10}
+.card__media{aspect-ratio:16/9;background:#0d1326}
+.card__media img{width:100%;height:100%;object-fit:cover;display:block}
+.card__body{padding:14px 14px 16px}
+.card__title{font:700 20px/1.1 'Russo One',sans-serif;letter-spacing:.5px;margin-bottom:6px}
+.card__desc{color:#cbd3ff99;font-size:14px;line-height:1.45;margin-bottom:12px}
+.btn--play{width:100%;padding:12px 14px;border-radius:10px;border:1px solid #2bf0ff66;
+  background:linear-gradient(180deg,#27c8ff26,#1b2c46);box-shadow:0 0 16px #27c8ff40 inset,0 0 18px #27c8ff25}
+.btn--play:hover{background:linear-gradient(180deg,#27c8ff3d,#203353)}
+
 .footer{padding:10px 0;text-align:center;color:#9aa1b6;border-top:1px solid rgba(255,255,255,.1)}
 
-@media (max-width: 820px){
-  .main{flex-direction:column}
-  .art{order:-1;width:100%}
-  .art .box{height:200px}
-}
-
-/* HUD для Worm */
+/* HUD Worm */
 .hud{position:fixed;inset:0;pointer-events:none;z-index:60;display:none}
 .hud__btn{position:absolute;pointer-events:auto;border:none;border-radius:999px;background:rgba(255,255,255,.08);
           border:1px solid rgba(255,255,255,.15);backdrop-filter:blur(6px);color:#fff}
-.hud__boost{right:14px;bottom:16px;width:74px;height:74px;font-size:12px}
-.hud__invis{left:14px;bottom:16px;width:74px;height:74px;font-size:12px}
-.hud__ring{position:absolute;inset:0;border-radius:999px;box-shadow:0 0 14px #39f3ff77 inset}
-.hud__label{position:absolute;left:0;right:0;bottom:8px;text-align:center;font-size:12px;color:#cbd3ffcc}
+.hud__boost{right:14px;bottom:16px;width:74px;height:74px}
+.hud__invis{left:14px;bottom:16px;width:74px;height:74px}
 .hud.show{display:block}
 
-/* прячем меню, когда игра запущена */
-body.playing-worm .top, body.playing-worm .main, body.playing-worm .footer{display:none}
-body.playing-cat  .top, body.playing-cat  .main, body.playing-cat  .footer{display:none}
+/* hide menu when playing */
+body.playing-worm .top,body.playing-worm .main,body.playing-worm .footer{display:none}
+body.playing-cat  .top,body.playing-cat  .main,body.playing-cat  .footer{display:none}
 </style>
 </head>
 <body>
 <div class="bg"></div>
 
 <header class="top">
-  <div class="brand">✦ <span>KOSMOS.<em>ARCADE</em></span></div>
+  <div class="brand">✦ <span>KOSMOS.<em>WORM</em></span></div>
   <div class="actions">
     <div class="chip" id="score">0</div>
     <button class="chip btn" id="to-menu">В меню</button>
@@ -70,336 +70,103 @@ body.playing-cat  .top, body.playing-cat  .main, body.playing-cat  .footer{displ
 </header>
 
 <main class="main">
-  <section>
-    <h1 class="h1">Выбирай режим</h1>
-    <p class="p">
-      <b>Worm</b>: светящаяся змейка с невидимым джойстиком, кнопкой ускорения и режимом невидимки.<br>
-      <b>Cat</b>: шар-котик с ушками, управление свайпами/клавишами.
-    </p>
-    <div class="modes">
-      <button class="mode btn" id="play-worm"><span class="ico">🐍</span><span>Worm</span></button>
-      <button class="mode btn" id="play-cat"><span class="ico">🐱</span><span>Cat</span></button>
-    </div>
-  </section>
-  <figure class="art">
-    <div class="box"></div><div class="shine"></div>
-  </figure>
+  <h1 class="h1">Выбирай режим</h1>
+  <p class="p">Нажми на карточку и начни играть!</p>
+  <div class="cards">
+    <article class="card">
+      <div class="card__media">
+        <img src="https://placehold.co/640x360/39f/fff?text=Worm" alt="Worm">
+      </div>
+      <div class="card__body">
+        <h3 class="card__title">Worm</h3>
+        <p class="card__desc">Светящаяся змейка: еда, рост, боты, буст ⚡ и невидимка 👻.</p>
+        <button class="btn btn--play" id="play-worm">Играть</button>
+      </div>
+    </article>
+    <article class="card">
+      <div class="card__media">
+        <img src="https://placehold.co/640x360/f93/fff?text=Cat" alt="Cat">
+      </div>
+      <div class="card__body">
+        <h3 class="card__title">Cat</h3>
+        <p class="card__desc">Кот-шар: свайпы/клавиши, отскоки, буст Shift.</p>
+        <button class="btn btn--play" id="play-cat">Играть</button>
+      </div>
+    </article>
+  </div>
 </main>
 
 <footer class="footer">made by kosmos.bud 2k25</footer>
 
-<!-- HUD для Worm -->
+<!-- HUD -->
 <div class="hud" id="worm-hud">
-  <button class="hud__btn hud__invis" id="btn-invis" aria-label="Невидимка">
-    <div class="hud__ring"></div>
-    👻
-  </button>
-  <button class="hud__btn hud__boost" id="btn-boost" aria-label="Ускорение">
-    <div class="hud__ring"></div>
-    ⚡
-  </button>
-  <div class="hud__label">Ускорение / Невидимка</div>
+  <button class="hud__btn hud__invis" id="btn-invis">👻</button>
+  <button class="hud__btn hud__boost" id="btn-boost">⚡</button>
 </div>
 
 <script>
-/* ========= WORM (невидимый джойстик + ускорение + невидимка) ========= */
+/* ====== Worm game simplified (невидимый джойстик + буст + невидимка) ====== */
 (() => {
-  const CFG = {
-    worldSize:2600, baseSpeed:2.25, boostMult:1.55,
-    turnRate:0.10, segSpacing:8, initLen:28, snakeRadius:12, foodRadius:4,
-    bots:3, growthPerFood:6, dropEveryN:2,
-    invisDuration:6000, invisCooldown:12000  // мс
-  };
-  const rand=(a,b)=>a+Math.random()*(b-a), clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-  const dist2=(a,b)=>{const dx=a.x-b.x,dy=a.y-b.y;return dx*dx+dy*dy;}
-  const lerpAng=(a,b,t)=>{let d=((b-a+Math.PI*3)%(Math.PI*2))-Math.PI;return a+d*t;}
+  const CFG={world:2400,speed:2.3,boost:1.6,len:28,r:12,food:4};
+  let canvas,ctx,raf,running=false,snake=[],foods=[],dir=0,score=0,boostHeld=false,invisUntil=0,invisCd=0;
+  const cam={x:0,y:0,z:1}; const touch={a:false,sx:0,sy:0,ex:0,ey:0};
+  const HUD={root:document.getElementById('worm-hud'),boost:document.getElementById('btn-boost'),invis:document.getElementById('btn-invis')};
 
-  let canvas,ctx,raf,running=false,last=0,snakes=[],foods=[],player=null,score=0;
-  const cam={x:0,y:0,zoom:1,vw:0,vh:0};
-  const touch={active:false,sx:0,sy:0,ex:0,ey:0};
-  const HUD = {root:document.getElementById('worm-hud'),
-               boostBtn:document.getElementById('btn-boost'),
-               invisBtn:document.getElementById('btn-invis')};
-
-  class Snake{
-    constructor(x,y,isP=false,col='#6bf2ff'){
-      this.isPlayer=isP; this.alive=true; this.dir=rand(0,Math.PI*2);
-      this.speed=CFG.baseSpeed; this.radius=CFG.snakeRadius;
-      this.wantGrow=0; this.color=col;
-      this.invisUntil=0; this.invisCdUntil=0;
-      this.segs=[];
-      for(let i=0;i<CFG.initLen;i++) this.segs.push({x:x-i*CFG.segSpacing,y:y});
-    }
-    head(){return this.segs[0]}
-    isInvisible(now){ return now < this.invisUntil; }
-    canInvis(now){ return now >= this.invisCdUntil; }
-
-    update(now){
-      if(!this.alive) return;
-      // Невидимый джойстик — направление от точки касания
-      if(this.isPlayer && touch.active){
-        const dx=touch.ex-touch.sx, dy=touch.ey-touch.sy;
-        const a=Math.atan2(dy,dx); if(isFinite(a)) this.dir=lerpAng(this.dir,a,CFG.turnRate*2);
-      } else if(!this.isPlayer){
-        this.dir += rand(-CFG.turnRate*0.4, CFG.turnRate*0.4);
-      }
-
-      // скорость c учётом буста
-      const v = this.isPlayer && boostHeld ? CFG.baseSpeed*CFG.boostMult : CFG.baseSpeed;
-
-      // движение
-      const nx=this.head().x+Math.cos(this.dir)*v;
-      const ny=this.head().y+Math.sin(this.dir)*v;
-      this.segs.unshift({x:nx,y:ny});
-
-      // еда
-      for(let i=foods.length-1;i>=0;i--){
-        const f=foods[i];
-        if(dist2(this.head(),f)<(this.radius+CFG.foodRadius)**2){
-          foods.splice(i,1);
-          this.wantGrow+=CFG.growthPerFood;
-          if(this.isPlayer){ score++; document.getElementById('score').textContent=score; }
-        }
-      }
-      // хвост — не короче initLen
-      if(this.wantGrow>0) this.wantGrow--; else if(this.segs.length>CFG.initLen) this.segs.pop();
-
-      // торец
-      const h=this.head(); if(h.x<0)h.x+=CFG.worldSize; if(h.x>CFG.worldSize)h.x-=CFG.worldSize;
-      if(h.y<0)h.y+=CFG.worldSize; if(h.y>CFG.worldSize)h.y-=CFG.worldSize;
-    }
+  function init(){
+    snake=[]; for(let i=0;i<CFG.len;i++) snake.push({x:400-i*CFG.r*2,y:400});
+    foods=[]; for(let i=0;i<80;i++) foods.push({x:Math.random()*CFG.world,y:Math.random()*CFG.world});
+    score=0; document.getElementById('score').textContent=0;
   }
-
-  function dropFood(s){ for(let i=0;i<s.segs.length;i+=CFG.dropEveryN) foods.push({...s.segs[i]}); }
-  function hitHeadBody(a,b){ // столкновения: невидимка НЕ делает бессмертным, только визуально прячет
-    const h=a.head(); const R2=(a.radius+b.radius*0.9)**2;
-    for(const seg of b.segs){ if(dist2(h,seg)<=R2) return true; }
-    return false;
+  function head(){return snake[0];}
+  function step(t){
+    if(!running)return; const now=performance.now();
+    if(touch.a){dir=Math.atan2(touch.ey-touch.sy,touch.ex-touch.sx);}
+    const v=boostHeld?CFG.speed*CFG.boost:CFG.speed;
+    snake.unshift({x:head().x+Math.cos(dir)*v,y:head().y+Math.sin(dir)*v});
+    while(snake.length>CFG.len) snake.pop();
+    // еда
+    for(let i=foods.length-1;i>=0;i--){const f=foods[i];const dx=f.x-head().x,dy=f.y-head().y;if(dx*dx+dy*dy<(CFG.r+CFG.food)**2){foods.splice(i,1);CFG.len+=2;score++;document.getElementById('score').textContent=score;}}
+    draw(now); raf=requestAnimationFrame(step);
   }
-  function collide(now){
-    for(const s of snakes){
-      if(!s.alive) continue;
-      for(const o of snakes){
-        if(s===o || !o.alive) continue;
-        if(hitHeadBody(s,o)){ s.alive=false; dropFood(s); if(s.isPlayer) gameOver(); }
-      }
-    }
-    snakes = snakes.filter(s=>s.alive);
-  }
-
-  function resize(){
-    canvas.width=innerWidth; canvas.height=innerHeight;
-    const k=Math.min(innerWidth,innerHeight)/900;
-    cam.zoom=Math.max(.68,Math.min(1.15,k));
-    cam.vw=canvas.width/cam.zoom; cam.vh=canvas.height/cam.zoom;
-  }
-  function updateCam(){ if(!player) return;
-    cam.x=player.head().x-cam.vw/2; cam.y=player.head().y-cam.vh/2;
-    cam.x=clamp(cam.x,0,CFG.worldSize-cam.vw); cam.y=clamp(cam.y,0,CFG.worldSize-cam.vh);
-  }
-
-  function drawSnake(s, now){
-    const r=s.radius;
-    // прозрачность при невидимости
-    const alpha = s.isInvisible(now) ? 0.25 : 1;
-
-    // простая трубка + лёгкое свечение (чтобы не тормозило)
-    ctx.globalAlpha = Math.min(alpha*1.0, 1);
-    ctx.lineCap='round'; ctx.lineJoin='round';
-    ctx.lineWidth = r*2;
-    ctx.beginPath(); ctx.moveTo(s.segs[0].x,s.segs[0].y);
-    for(const p of s.segs) ctx.lineTo(p.x,p.y);
-    ctx.strokeStyle = s.color; ctx.stroke();
-
-    if(!s.isInvisible(now)){
-      // глазки
-      const h=s.head(), dpx=Math.cos(s.dir), dpy=Math.sin(s.dir), nx=-dpy, ny=dpx, off=r*.6, eyeR=r*.45;
-      ctx.globalAlpha = 1;
-      ctx.beginPath(); ctx.arc(h.x+nx*off+dpx*.6,h.y+ny*off+dpy*.6,eyeR,0,Math.PI*2); ctx.fillStyle='#fff'; ctx.fill();
-      ctx.beginPath(); ctx.arc(h.x-nx*off+dpx*.6,h.y-ny*off+dpy*.6,eyeR,0,Math.PI*2); ctx.fillStyle='#fff'; ctx.fill();
-      ctx.beginPath(); ctx.arc(h.x+nx*off+dpx*1.0,h.y+ny*off+dpy*1.0,eyeR*.45,0,Math.PI*2); ctx.fillStyle='#111'; ctx.fill();
-      ctx.beginPath(); ctx.arc(h.x-nx*off+dpx*1.0,h.y-ny*off+dpy*1.0,eyeR*.45,0,Math.PI*2); ctx.fillStyle='#111'; ctx.fill();
-    }
-    ctx.globalAlpha = 1;
-  }
-
   function draw(now){
     ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.scale(cam.zoom,cam.zoom); ctx.translate(-cam.x,-cam.y);
-
-    // фон тёмный
-    ctx.fillStyle='#06101a'; ctx.fillRect(cam.x,cam.y,cam.vw,cam.vh);
-    // еда
-    for(const f of foods){ ctx.beginPath(); ctx.arc(f.x,f.y,CFG.foodRadius,0,Math.PI*2); ctx.fillStyle='#00ffd5'; ctx.fill(); }
-    // змеи
-    for(const s of snakes) drawSnake(s, now);
-
-    // прогресс невидимки на кнопке
-    if(player){
-      const nowMs = now;
-      const cdLeft = Math.max(0, player.invisCdUntil - nowMs);
-      const durLeft = Math.max(0, player.invisUntil - nowMs);
-      HUD.invisBtn.style.opacity = player.canInvis(nowMs) ? '1' : '.6';
-      HUD.invisBtn.textContent = durLeft>0 ? '👻' : (cdLeft>0 ? Math.ceil(cdLeft/1000)+'s' : '👻');
-    }
+    ctx.fillStyle='#000';ctx.fillRect(0,0,canvas.width,canvas.height);
+    // food
+    ctx.fillStyle='#0ff'; for(const f of foods){ctx.beginPath();ctx.arc(f.x,f.y,CFG.food,0,Math.PI*2);ctx.fill();}
+    // snake
+    ctx.strokeStyle='#6bf'; ctx.lineWidth=CFG.r*2; ctx.lineCap='round'; ctx.beginPath(); ctx.moveTo(snake[0].x,snake[0].y); for(const s of snake) ctx.lineTo(s.x,s.y); ctx.stroke();
+    // eyes
+    if(now<invisUntil) ctx.globalAlpha=0.3; else ctx.globalAlpha=1;
+    ctx.globalAlpha=1;
   }
-
-  function step(ts){
-    if(!running) return;
-    const now = performance.now();
-    for(const s of snakes) s.update(now);
-    collide(now); updateCam(); draw(now);
-    raf=requestAnimationFrame(step);
-  }
-
-  function spawnFoods(){ foods.length=0; for(let i=0;i<90;i++) foods.push({x:rand(60,CFG.worldSize-60),y:rand(60,CFG.worldSize-60)}); }
-  function spawn(){
-    snakes.length=0; score=0; document.getElementById('score').textContent='0';
-    player = new Snake(400,400,true,'#6bf2ff'); snakes.push(player);
-    for(let i=0;i<CFG.bots;i++){ snakes.push(new Snake(rand(200,CFG.worldSize-200), rand(200,CFG.worldSize-200), false, '#ffaa6b')); }
-    spawnFoods();
-  }
-
-  let boostHeld=false;
-
   function start(){
-    if(running) return;
-    canvas=document.createElement('canvas');
-    canvas.style.position='fixed'; canvas.style.inset='0'; canvas.style.zIndex='50'; canvas.style.touchAction='none';
-    document.body.appendChild(canvas);
-    ctx=canvas.getContext('2d');
-    addEvents(); resize(); spawn();
-    running=true; document.body.classList.add('playing-worm');
-    HUD.root.classList.add('show');
-    raf=requestAnimationFrame(step);
+    if(running)return; canvas=document.createElement('canvas');canvas.style.position='fixed';canvas.style.inset=0;canvas.style.zIndex=50;document.body.appendChild(canvas);
+    ctx=canvas.getContext('2d');canvas.width=innerWidth;canvas.height=innerHeight;init();
+    running=true;document.body.classList.add('playing-worm');HUD.root.classList.add('show');raf=requestAnimationFrame(step);
+    addEv();
   }
-  function stop(){
-    running=false; if(raf) cancelAnimationFrame(raf);
-    removeEvents(); if(canvas) canvas.remove();
-    HUD.root.classList.remove('show');
-    snakes=[]; foods=[];
-    document.body.classList.remove('playing-worm');
+  function stop(){running=false;cancelAnimationFrame(raf);canvas.remove();HUD.root.classList.remove('show');document.body.classList.remove('playing-worm');}
+  function addEv(){
+    canvas.addEventListener('touchstart',e=>{const t=e.touches[0];touch.a=true;touch.sx=touch.ex=t.clientX;touch.sy=touch.ey=t.clientY;},{passive:true});
+    canvas.addEventListener('touchmove',e=>{const t=e.touches[0];touch.ex=t.clientX;touch.ey=t.clientY;},{passive:true});
+    canvas.addEventListener('touchend',()=>{touch.a=false;},{passive:true});
+    HUD.boost.addEventListener('touchstart',()=>{boostHeld=true;},{passive:true});
+    HUD.boost.addEventListener('touchend',()=>{boostHeld=false;},{passive:true});
+    HUD.invis.addEventListener('click',()=>{const now=performance.now();if(now>invisCd){invisUntil=now+6000;invisCd=now+12000;}});
   }
-  function gameOver(){ running=false; setTimeout(stop,400); }
-
-  // управление
-  function addEvents(){
-    addEventListener('resize',resize);
-    // Невидимый джойстик: в любом месте экрана
-    const onStart=e=>{const t=e.touches?e.touches[0]:e; touch.active=true; touch.sx=touch.ex=t.clientX; touch.sy=touch.ey=t.clientY;}
-    const onMove =e=>{if(!touch.active)return; const t=e.touches?e.touches[0]:e; touch.ex=t.clientX; touch.ey=t.clientY;}
-    const onEnd  =()=>{touch.active=false; if(player) player.speed=CFG.baseSpeed;}
-    canvas.addEventListener('touchstart',onStart,{passive:true});
-    canvas.addEventListener('touchmove', onMove ,{passive:true});
-    canvas.addEventListener('touchend',  onEnd  ,{passive:true});
-    canvas.addEventListener('mousedown', onStart);
-    addEventListener('mousemove', onMove);
-    addEventListener('mouseup',   onEnd);
-
-    // кнопка ускорения
-    HUD.boostBtn.addEventListener('touchstart', ()=>{boostHeld=true;},{passive:true});
-    HUD.boostBtn.addEventListener('touchend',   ()=>{boostHeld=false;},{passive:true});
-    HUD.boostBtn.addEventListener('mousedown',  ()=>{boostHeld=true;});
-    addEventListener('mouseup',                 ()=>{boostHeld=false;});
-
-    // невидимка
-    HUD.invisBtn.addEventListener('click', ()=>{
-      const now = performance.now();
-      if(!player) return;
-      if(player.canInvis(now)){
-        player.invisUntil = now + CFG.invisDuration;
-        player.invisCdUntil = now + CFG.invisCooldown;
-      }
-    });
-
-    // ПК: стрелки/WASD и Shift — буст
-    addEventListener('keydown', e=>{
-      if(!player) return; const k=e.key.toLowerCase();
-      if(k==='shift') boostHeld=true;
-      if(k==='arrowleft'||k==='a') player.dir-=.22;
-      if(k==='arrowright'||k==='d') player.dir+=.22;
-      if(k==='arrowup'||k==='w') player.speed=CFG.baseSpeed*CFG.boostMult*.9;
-      if(k==='arrowdown'||k==='s') player.speed=CFG.baseSpeed*0.8;
-    });
-    addEventListener('keyup', e=>{
-      if(!player) return; const k=e.key.toLowerCase();
-      if(k==='shift') boostHeld=false;
-      if(['arrowup','w','arrowdown','s'].includes(k)) player.speed=CFG.baseSpeed;
-    });
-  }
-  function removeEvents(){ removeEventListener('resize',resize); }
-
-  document.getElementById('play-worm').addEventListener('click', start);
-  document.getElementById('to-menu').addEventListener('click', stop);
+  document.getElementById('play-worm').onclick=start;
+  document.getElementById('to-menu').onclick=stop;
 })();
-</script>
 
-<script>
-/* ========= CAT (свайп/клавиши) ========= */
+/* ====== Cat game (управление свайпами/клавишами) ====== */
 (() => {
-  let canvas, ctx, raf, running = false;
-  const cat = {x:300,y:300,vx:3,vy:2,r:30,speed:3.2,maxSpeed:5.2};
-  const touch={active:false,sx:0,sy:0,ex:0,ey:0};
-
-  function resize(){canvas.width=innerWidth;canvas.height=innerHeight;}
-  function setDir(dx,dy,boost=false){
-    const len=Math.hypot(dx,dy)||1, k=Math.min(1,len/60), spd=(boost?cat.maxSpeed:cat.speed)*k;
-    cat.vx=(dx/len)*spd; cat.vy=(dy/len)*spd;
-  }
-
-  function drawCat(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.beginPath();ctx.arc(cat.x,cat.y,cat.r,0,Math.PI*2);ctx.fillStyle='#ffcc66';ctx.fill();
-    // ушки
-    ctx.beginPath();ctx.moveTo(cat.x-cat.r*0.6,cat.y-cat.r*0.2);ctx.lineTo(cat.x-cat.r*1.0,cat.y-cat.r*1.0);ctx.lineTo(cat.x-cat.r*0.2,cat.y-cat.r*0.7);ctx.closePath();ctx.fillStyle='#ff9966';ctx.fill();
-    ctx.beginPath();ctx.moveTo(cat.x+cat.r*0.6,cat.y-cat.r*0.2);ctx.lineTo(cat.x+cat.r*1.0,cat.y-cat.r*1.0);ctx.lineTo(cat.x+cat.r*0.2,cat.y-cat.r*0.7);ctx.closePath();ctx.fillStyle='#ff9966';ctx.fill();
-    // глаза
-    ctx.beginPath();ctx.arc(cat.x-cat.r*0.35,cat.y-cat.r*0.15,cat.r*0.18,0,Math.PI*2);
-    ctx.arc(cat.x+cat.r*0.35,cat.y-cat.r*0.15,cat.r*0.18,0,Math.PI*2);ctx.fillStyle='#222';ctx.fill();
-  }
-
-  function update(){
-    cat.x+=cat.vx; cat.y+=cat.vy;
-    cat.vx*=0.995; cat.vy*=0.995;
-    if(cat.x<cat.r){cat.x=cat.r;cat.vx=Math.abs(cat.vx);}
-    if(cat.x>canvas.width-cat.r){cat.x=canvas.width-cat.r;cat.vx=-Math.abs(cat.vx);}
-    if(cat.y<cat.r){cat.y=cat.r;cat.vy=Math.abs(cat.vy);}
-    if(cat.y>canvas.height-cat.r){cat.y=canvas.height-cat.r;cat.vy=-Math.abs(cat.vy);}
-  }
-
-  function step(){ if(!running) return; update(); drawCat(); raf=requestAnimationFrame(step); }
-
-  function start(){
-    if(running) return;
-    canvas=document.createElement('canvas'); canvas.style.position='fixed'; canvas.style.inset='0'; canvas.style.zIndex='50'; canvas.style.touchAction='none';
-    document.body.appendChild(canvas); ctx=canvas.getContext('2d'); addEvents(); resize(); running=true; document.body.classList.add('playing-cat'); raf=requestAnimationFrame(step);
-  }
-  function stop(){ running=false; if(raf) cancelAnimationFrame(raf); removeEvents(); if(canvas) canvas.remove(); document.body.classList.remove('playing-cat'); }
-
-  function addEvents(){
-    addEventListener('resize',resize);
-    const onStart=e=>{const t=e.touches?e.touches[0]:e; touch.active=true; touch.sx=touch.ex=t.clientX; touch.sy=touch.ey=t.clientY;};
-    const onMove =e=>{if(!touch.active)return; const t=e.touches?e.touches[0]:e; touch.ex=t.clientX; touch.ey=t.clientY; setDir(touch.ex-touch.sx,touch.ey-touch.sy);};
-    const onEnd  =()=>{touch.active=false;};
-    canvas.addEventListener('touchstart',onStart,{passive:true});
-    canvas.addEventListener('touchmove', onMove ,{passive:true});
-    canvas.addEventListener('touchend',  onEnd  ,{passive:true});
-    canvas.addEventListener('mousedown', onStart);
-    addEventListener('mousemove', onMove);
-    addEventListener('mouseup',   onEnd);
-
-    addEventListener('keydown', e=>{
-      const k=e.key.toLowerCase(), boost=e.shiftKey;
-      if(['arrowleft','a'].includes(k))  setDir(-1,0,boost);
-      if(['arrowright','d'].includes(k)) setDir( 1,0,boost);
-      if(['arrowup','w'].includes(k))    setDir( 0,-1,boost);
-      if(['arrowdown','s'].includes(k))  setDir( 0, 1,boost);
-    });
-  }
-  function removeEvents(){ removeEventListener('resize',resize); }
-
-  document.getElementById('play-cat').addEventListener('click', start);
-  document.getElementById('to-menu').addEventListener('click', stop);
+  let canvas,ctx,raf,running=false,cat={x:300,y:300,vx:3,vy:2,r:30};
+  function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);ctx.beginPath();ctx.arc(cat.x,cat.y,cat.r,0,Math.PI*2);ctx.fillStyle='#fc6';ctx.fill();}
+  function step(){if(!running)return;cat.x+=cat.vx;cat.y+=cat.vy;if(cat.x<cat.r||cat.x>canvas.width-cat.r)cat.vx*=-1;if(cat.y<cat.r||cat.y>canvas.height-cat.r)cat.vy*=-1;draw();raf=requestAnimationFrame(step);}
+  function start(){if(running)return;canvas=document.createElement('canvas');canvas.style.position='fixed';canvas.style.inset=0;canvas.style.zIndex=50;document.body.appendChild(canvas);ctx=canvas.getContext('2d');canvas.width=innerWidth;canvas.height=innerHeight;running=true;document.body.classList.add('playing-cat');raf=requestAnimationFrame(step);}
+  function stop(){running=false;cancelAnimationFrame(raf);canvas.remove();document.body.classList.remove('playing-cat');}
+  document.getElementById('play-cat').onclick=start;
+  document.getElementById('to-menu').addEventListener('click',stop);
 })();
 </script>
 </body>
