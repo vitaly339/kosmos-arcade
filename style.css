@@ -1,138 +1,190 @@
-/* Kosmos.Worm — стиль неонового меню */
-:root{
-  --bg-0:#050815;
-  --bg-1:#0b1020;
-  --txt:#cfe3ff;
-  --muted:#8aa0c9;
-  --accent:#6bf2ff;
-  --accent-2:#7a5cff;
-  --brand:#0ff;
-  --radius:16px;
-  --shadow:0 0 24px rgba(123, 106, 255, .35), 0 0 48px rgba(107,242,255,.25);
+/* ====== Базовые стили ====== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-*{box-sizing:border-box}
-html,body{height:100%}
-body{
-  margin:0;
-  font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  color:var(--txt);
-  background:
-    radial-gradient(1200px 800px at 80% -10%, rgba(122,92,255,.25), transparent 60%),
-    radial-gradient(900px 700px at -10% 110%, rgba(107,242,255,.15), transparent 60%),
-    var(--bg-0);
-  overflow-x:hidden;
+html, body {
+  height: 100%;
+  background: #0b1020;
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  overflow: hidden;
 }
 
-.wrap{width:min(1080px, 92%); margin-inline:auto}
-
-.topbar{
-  display:flex; align-items:center; justify-content:space-between;
-  padding:18px 0;
-}
-.brand{
-  display:flex; align-items:center; gap:12px;
-  filter:drop-shadow(0 0 12px rgba(0,255,255,.35));
-}
-.brand__spark{color:var(--brand); font-size:1.1rem}
-.brand__title{
-  font-family:"Russo One", system-ui;
-  letter-spacing:.5px;
-  text-transform:uppercase;
-  font-size:1.15rem;
-  color:white;
-}
-.brand__title span{
-  background:linear-gradient(90deg, var(--accent), var(--accent-2));
-  -webkit-background-clip:text; background-clip:text; color:transparent;
-  text-shadow:0 0 18px rgba(105,195,255,.35);
+button {
+  cursor: pointer;
+  font-family: inherit;
+  border: none;
+  outline: none;
+  background: none;
 }
 
-.top-actions{display:flex; gap:10px; flex-wrap:wrap}
-.chip{
-  border:1px solid rgba(255,255,255,.12);
-  background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-  color:var(--txt);
-  padding:10px 14px;
-  border-radius:12px;
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  cursor:pointer;
+/* ====== Фон ====== */
+.bg-decor {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at center, #142040, #05060d);
+  z-index: -2;
 }
 
-.hero{
-  display:grid;
-  grid-template-columns:1.1fr .9fr;
-  gap:32px;
-  align-items:center;
-  padding:24px 0 36px;
-}
-@media (max-width: 880px){
-  .hero{grid-template-columns:1fr; padding-top:6px}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: url('https://www.transparenttextures.com/patterns/stardust.png');
+  opacity: 0.15;
+  z-index: -1;
 }
 
-.hero__copy .glow{
-  font-family:"Russo One", system-ui;
-  font-size: clamp(28px, 4.6vw, 52px);
-  margin: 0 0 8px;
-  line-height:1.05;
-  text-transform:uppercase;
-  background:linear-gradient(90deg,#e9f3ff,#a7d8ff);
-  -webkit-background-clip:text; background-clip:text; color:transparent;
-  text-shadow:0 0 24px rgba(135,205,255,.55);
-}
-.subtitle{
-  color:var(--muted);
-  margin:0 0 20px;
+/* ====== Шапка ====== */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: rgba(0,0,0,.35);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255,255,255,.1);
+  position: relative;
+  z-index: 20;
 }
 
-.mode-buttons{display:flex; gap:14px; flex-wrap:wrap}
-.mode{
-  --g:linear-gradient(90deg, var(--accent), var(--accent-2));
-  position:relative;
-  display:inline-flex; align-items:center; gap:10px;
-  padding:14px 20px;
-  border:0; border-radius:14px;
-  color:#06101a; font-weight:700; letter-spacing:.3px;
-  background:var(--g);
-  cursor:pointer;
-  transition: transform .12s ease, box-shadow .2s ease;
-  box-shadow: var(--shadow);
-}
-.mode:hover{ transform: translateY(-2px) scale(1.02) }
-.mode:active{ transform: translateY(1px) scale(.98) }
-.mode__icon{font-size:1.25rem}
-.mode__text{font-size:1.05rem}
-
-.mode--cat{ --g:linear-gradient(90deg,#ffcc6b,#fd6bff) }
-
-.hero__art{
-  position:relative;
-  border-radius:var(--radius);
-  overflow:hidden;
-  background: radial-gradient(120% 120% at 100% 0, rgba(107,242,255,.15), rgba(122,92,255,.15));
-  box-shadow: 0 20px 50px rgba(0,0,0,.45), 0 0 40px rgba(124,90,255,.2);
-}
-.hero__art img{
-  width:100%; height:auto; display:block;
-  object-fit:cover;
-  transform: scale(1.02);
-  filter: saturate(1.07) contrast(1.02);
-}
-.shine{
-  position:absolute; inset:auto -30% -30% -30%; height:60%;
-  background: radial-gradient(60% 80% at 50% 100%, rgba(255,255,255,.5), transparent 60%);
-  mix-blend-mode: screen; pointer-events:none;
+.brand {
+  display: flex;
+  align-items: center;
+  font-family: 'Russo One', sans-serif;
+  font-size: 20px;
+  letter-spacing: 1px;
 }
 
-.bg-decor{
-  position:fixed; inset:-40vmax -20vmax auto -20vmax; height:60vmax;
-  background: radial-gradient(40vmax 30vmax at 30% 10%, rgba(122,92,255,.25), transparent 60%);
-  filter: blur(40px);
-  z-index:-1;
+.brand__spark {
+  color: #39f3ff;
+  margin-right: 6px;
+}
+.brand__title span {
+  color: #39f3ff;
 }
 
-.footer{
-  display:flex; justify-content:center; padding:12px 0 30px; color:var(--muted);
-  font-size:.9rem;
+/* ====== Кнопки ====== */
+.chip {
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.1);
+  padding: 6px 12px;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 14px;
+  margin-left: 6px;
+  transition: background .2s, transform .1s;
+}
+.chip:hover {
+  background: rgba(255,255,255,.18);
+}
+.chip:active {
+  transform: scale(.95);
+}
+
+/* ====== Главный экран ====== */
+.wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 30px 20px;
+}
+
+.hero__copy {
+  flex: 1;
+}
+.hero__copy h1 {
+  font-family: 'Russo One', sans-serif;
+  font-size: clamp(28px, 6vw, 54px);
+  color: #fff;
+}
+.hero__copy .glow {
+  text-shadow: 0 0 8px #39f3ff, 0 0 18px #39f3ff;
+}
+
+.subtitle {
+  margin: 18px 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #bbb;
+}
+
+/* ====== Кнопки выбора режима ====== */
+.mode-buttons {
+  display: flex;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.mode {
+  flex: 1;
+  padding: 18px;
+  border-radius: 10px;
+  background: linear-gradient(145deg, #151c3a, #0a0f20);
+  border: 1px solid rgba(255,255,255,.1);
+  color: #fff;
+  font-size: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  transition: transform .15s, box-shadow .3s;
+}
+.mode__icon {
+  font-size: 30px;
+}
+.mode:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 0 14px #39f3ff55;
+}
+.mode:active {
+  transform: scale(.96);
+}
+
+/* ====== Арт справа ====== */
+.hero__art {
+  flex: 1;
+  position: relative;
+}
+.hero__art img {
+  max-width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 0 14px rgba(57,243,255,.3);
+}
+.hero__art .shine {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,.15), transparent 60%);
+  border-radius: 12px;
+  pointer-events: none;
+}
+
+/* ====== Футер ====== */
+.footer {
+  text-align: center;
+  font-size: 13px;
+  color: #777;
+  padding: 12px 0;
+  border-top: 1px solid rgba(255,255,255,.1);
+}
+
+/* ====== Мобильная адаптация ====== */
+@media (max-width: 768px) {
+  .hero {
+    flex-direction: column;
+    text-align: center;
+  }
+  .hero__art {
+    order: -1;
+  }
 }
