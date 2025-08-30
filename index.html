@@ -34,9 +34,6 @@
   #boostBtn{transform:translateX(130px);background:#0e8a6a;border-color:#33c49f}
   #invisBtn{transform:translateX(260px);background:#8a0e6a;border-color:#d658b1}
 
-  /* Cat jump */
-  #jumpBtn{position:absolute;right:12px;bottom:130px;padding:14px 18px;font-size:18px;font-weight:800;color:#fff;background:#1c2f5e;border:1px solid #3b5ca0;border-radius:12px;display:none;z-index:6}
-
   /* Видео-реклама */
   #adWrap{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.75);z-index:30}
   #adCard{background:#0b1024;border:1px solid #2b3f6f;border-radius:12px;padding:10px;max-width:80%;width:560px}
@@ -71,7 +68,7 @@
           <button class="btn" data-mode="worm">🐍 Worm</button>
           <button class="btn" data-mode="cat">🐱 Cat</button>
         </div>
-        <p style="opacity:.85;font-size:12px;margin-top:8px">Worm: плавающий джойстик под пальцем, ускорение, фрукты, бомбы, боты, камера по карте. Cat: джойстик + кнопка прыжка, камера вверх.</p>
+        <p style="opacity:.85;font-size:12px;margin-top:8px">Worm: плавающий джойстик, ускорение, фрукты, бомбы, боты, камера по карте. Cat: движение по джойстику, отскоки — без кнопки прыжка.</p>
       </div>
     </div>
 
@@ -145,7 +142,6 @@
     <!-- Кнопки игры -->
     <button id="boostBtn" class="btn">Boost</button>
     <button id="invisBtn" class="btn">Невидимка</button>
-    <button id="jumpBtn" class="btn" aria-label="jump">⤴︎ Jump</button>
 
     <div id="footer">made by kosmos.bud 2k25</div>
   </div>
@@ -170,7 +166,7 @@ var scoreEl=document.getElementById('score');
 var adWrap=document.getElementById('adWrap'), adVideo=document.getElementById('adVideo'), skipAd=document.getElementById('skipAd');
 
 var joyWrap=document.getElementById('joy'), joyBase=joyWrap.querySelector('.joy-base'), joyKnob=joyWrap.querySelector('.joy-knob');
-var boostBtn=document.getElementById('boostBtn'), invisBtn=document.getElementById('invisBtn'), jumpBtn=document.getElementById('jumpBtn');
+var boostBtn=document.getElementById('boostBtn'), invisBtn=document.getElementById('invisBtn');
 
 /* ======== КАНВАС ======== */
 function resize(){var r=Math.max(1,Math.min(window.devicePixelRatio||1,3)),w=canvas.parentElement.clientWidth,h=canvas.parentElement.clientHeight;canvas.style.width=w+'px';canvas.style.height=h+'px';canvas.width=Math.floor(w*r);canvas.height=Math.floor(h*r);ctx.setTransform(r,0,0,r,0,0);}
@@ -221,8 +217,8 @@ function fmtTable(a){var s='';for(var i=0;i<a.length;i++){var r=a[i];s+=(i+1)+'.
 function updateRecordsUI(){ var all=LS.get('records',[]).sort(function(a,b){return b.score-a.score}); recAll.textContent=fmtTable(all.slice(0,10)); var mine=all.filter(function(r){return r.name===playerName}).sort(function(a,b){return b.score-a.score}); recMine.textContent=fmtTable(mine.slice(0,10)); }
 function saveRecord(name,sc){ var arr=LS.get('records',[]); arr.push({name:name||'Player',score:sc|0,ts:Date.now()}); LS.set('records',arr); }
 
-/* ======== ПЛАВАЮЩИЙ ДЖОЙСТИК (как wormax-стайл) ======== */
-var joy={active:false, ox:0, oy:0, ax:0, ay:0}; // origin & axes (-1..1)
+/* ======== ПЛАВАЮЩИЙ ДЖОЙСТИК ======== */
+var joy={active:false, ox:0, oy:0, ax:0, ay:0};
 function showJoy(x,y){ joyWrap.style.display='block'; joyWrap.style.transform='translate('+x+'px,'+y+'px)'; joyBase.style.transform='translate(0,0)'; joyKnob.style.transform='translate(0,0)'; }
 function moveJoy(x,y){
   var dx=x-joy.ox, dy=y-joy.oy, len=Math.sqrt(dx*dx+dy*dy)||1, maxR=50;
@@ -232,7 +228,6 @@ function moveJoy(x,y){
   joyKnob.style.transform='translate('+ (nx*r) +'px,'+ (ny*r) +'px)';
 }
 function hideJoy(){ joyWrap.style.display='none'; joy.active=false; joy.ax=joy.ay=0; }
-
 canvas.addEventListener('pointerdown', function(e){
   if(mode!=='worm' && mode!=='cat') return;
   e.preventDefault();
@@ -294,24 +289,23 @@ function updateWorm(dt){
   wrapPos(worm);
   worm.trail.unshift({x:worm.x,y:worm.y}); if(worm.trail.length>1600) worm.trail.pop();
 
-  // боты — простая ИИ: тянутся к ближайшему фрукту, избегают бомбу, иногда шумят
+  // боты — ИИ: тянутся к ближайшему фрукту, избегают бомбу, немного шумят
   for(var i=0;i<bots.length;i++){
     var b=bots[i];
     var tgt=getNearest(foods,b.x,b.y);
     var avoid=getNearest(bombs,b.x,b.y);
     var turn = b.ang;
     if (tgt){ var a=Math.atan2(tgt.y-b.y, tgt.x-b.x); turn = mixAngle(b.ang,a,0.08); }
-    if (avoid && dist(b.x,b.y,avoid.x,avoid.y)<120){ // избегать
+    if (avoid && dist(b.x,b.y,avoid.x,avoid.y)<120){
       var aa=Math.atan2(b.y-avoid.y, b.x-avoid.x);
       turn = mixAngle(turn, aa, 0.25);
     }
-    // немного «живости»
     b.aiTurn=(b.aiTurn||0) + (Math.random()-0.5)*0.02;
     b.ang = wrapAngle(turn + b.aiTurn);
     var sp= b.spd* (0.95+Math.random()*0.1);
     b.x += Math.cos(b.ang)*sp*dt; b.y += Math.sin(b.ang)*sp*dt; wrapPos(b);
     b.trail.unshift({x:b.x,y:b.y}); if(b.trail.length>1400) b.trail.pop();
-    // еда для бота (он ест, но очки только игроку)
+    // боты едят фрукты
     for(var fi=foods.length-1;fi>=0;fi--){ if(dist(b.x,b.y,foods[fi].x,foods[fi].y)<12){ foods.splice(fi,1); spawnFruit(); } }
   }
 
@@ -333,6 +327,15 @@ function updateWorm(dt){
     }
   }
 
+  // столкновение игрока с ботами → бот исчезает, сыплет еду, игрок растёт на 80% длины бота
+  for (var bi = bots.length - 1; bi >= 0; bi--) {
+    var b2 = bots[bi];
+    if (dist(worm.x, worm.y, b2.x, b2.y) < 14) {
+      absorbBot(bi);
+      break;
+    }
+  }
+
   // таймер невидимки
   if(invis){ invisTimer-=dt; if(invisTimer<=0){invis=false;} }
 
@@ -345,7 +348,7 @@ function updateWorm(dt){
 }
 function drawWorm(){
   var W=canvas.clientWidth,H=canvas.clientHeight;
-  // фон-сетка космоса
+  // фон-сетка
   ctx.fillStyle='#081022'; ctx.fillRect(0,0,W,H);
   ctx.strokeStyle='rgba(255,255,255,.06)'; ctx.lineWidth=1;
   var grid=160, x0 = -((cam.x%grid)+grid)%grid; for(var gx=x0; gx<W; gx+=grid){ ctx.beginPath(); ctx.moveTo(gx,0); ctx.lineTo(gx,H); ctx.stroke(); }
@@ -353,20 +356,20 @@ function drawWorm(){
 
   // фрукты
   for(var i=0;i<foods.length;i++){
-    var f=foods[i]; var sx=f.x-cam.x, sy=f.y-cam.y;
+    var f=foods[i], sx=f.x-cam.x, sy=f.y-cam.y;
     if (sx<-20||sy<-20||sx>W+20||sy>H+20) continue;
     ctx.fillStyle=f.c.c; ctx.beginPath(); ctx.arc(sx,sy,f.r,0,Math.PI*2); ctx.fill();
   }
   // бомбы
   for(i=0;i<bombs.length;i++){
-    var b=bombs[i]; sx=b.x-cam.x; sy=b.y-cam.y;
+    var b=bombs[i], sx=b.x-cam.x, sy=b.y-cam.y;
     if (sx<-20||sy<-20||sx>W+20||sy>H+20) continue;
     ctx.fillStyle='#111'; ctx.beginPath(); ctx.arc(sx,sy,b.r,0,Math.PI*2); ctx.fill();
     ctx.fillStyle='#ff5252'; ctx.beginPath(); ctx.arc(sx,sy,3,0,Math.PI*2); ctx.fill();
   }
 
   // боты (фиолетовая палитра)
-  for(i=0;i<bots.length;i++) drawSnake(bots[i], '#9b8cff', '#e6d5ff');
+  for(i=0;i<bots.length;i++) drawSnake(bots[i], '#9b8cff');
 
   // игрок (радужный) + имя
   drawPlayerSnake(worm);
@@ -376,7 +379,7 @@ function drawWorm(){
   if (boostHold) ctx.fillText('BOOST', 12, 16);
   if (invis)     ctx.fillText('INVIS '+Math.ceil(invisTimer)+'s', 12, 32);
 }
-function drawSnake(snk, bodyColor, headColor){
+function drawSnake(snk, bodyColor){
   var W=canvas.clientWidth,H=canvas.clientHeight;
   for(var s=0;s<snk.segs;s++){
     var p=snk.trail[s*snk.step]||snk, sx=p.x-cam.x, sy=p.y-cam.y;
@@ -384,7 +387,6 @@ function drawSnake(snk, bodyColor, headColor){
     var r=Math.max(3.2, 9.5 - s*0.08);
     ctx.beginPath(); ctx.fillStyle=bodyColor; ctx.arc(sx,sy,r,0,Math.PI*2); ctx.fill();
   }
-  // имя
   ctx.fillStyle='rgba(255,255,255,.9)'; ctx.font='11px system-ui'; ctx.textAlign='center';
   ctx.fillText(snk.name, snk.x-cam.x, snk.y-cam.y - 16);
 }
@@ -393,13 +395,39 @@ function drawPlayerSnake(snk){
   for(var s=0;s<snk.segs;s++){
     var p=snk.trail[s*snk.step]||snk, sx=p.x-cam.x, sy=p.y-cam.y;
     if (sx<-30||sy<-30||sx>W+30||sy>H+30) continue;
-    var r=Math.max(3.2, 9.8 - s*0.09);
+    var r=Math.max(3.2, 9.8 - s*0.09); // чем больше segs, тем массивнее выглядит змейка
     var hue=(s*14+(Date.now()/40)%360)%360;
     ctx.fillStyle='hsl('+hue+' 90% 55%)';
     ctx.beginPath(); ctx.arc(sx,sy,r,0,Math.PI*2); ctx.fill();
   }
   ctx.fillStyle='rgba(255,255,255,.95)'; ctx.font='12px system-ui'; ctx.textAlign='center';
   ctx.fillText(snk.name, snk.x-cam.x, snk.y-cam.y - 18);
+}
+
+/* съесть бота: насыпать еду, убрать бота, вырастить игрока на 80% его длины */
+function absorbBot(botIndex){
+  var b = bots[botIndex];
+  if (!b) return;
+
+  // 1) Еда по его следу
+  var step = 6;
+  for (var i = 0; i < b.trail.length; i += step) {
+    var p = b.trail[i];
+    foods.push({
+      x: p.x, y: p.y,
+      r: 4,
+      c: FRUITS[(Math.random() * FRUITS.length) | 0]
+    });
+  }
+
+  // 2) Удаляем бота
+  bots.splice(botIndex, 1);
+
+  // 3) Рост игрока: +80% от длины бота
+  var botLength = b.segs || 16;
+  var gain = Math.max(1, Math.floor(botLength * 0.8));
+  worm.segs += gain;
+  if (worm.segs > 220) worm.segs = 220; // ограничение, чтобы не лагало
 }
 
 /* ======== БУСТЫ И РЕКЛАМКА ======== */
@@ -416,15 +444,15 @@ invisBtn.onclick=function(){
 function triggerAdAndRestart(){
   saveRecord(playerName, score); LS.set('bank', bank);
   adVideo.src='ad.mp4'; show(adWrap);
-  function finish(){ adVideo.pause(); hide(adWrap); startWorm(bots.length); }
+  function finish(){ adVideo.pause(); hide(adWrap); startWorm(0); } // перезапуск без изменения настроек ботов, если нужно — поменяй
   adVideo.onended=finish; skipAd.onclick=finish;
 }
 
-/* ======== CAT (коротко) ======== */
-var CAT_G=1400, CAT_JUMP=-760, CAT_BOUNCE=-800, CAT_SPEED=240, CAT_GAP_MIN=140, CAT_GAP_MAX=170;
-var cat=null, tramps=[], camY=0, jumpRequest=false, airJump=true, minCamY=0;
+/* ======== CAT (без Jump-кнопки) ======== */
+var CAT_G=1400, CAT_BOUNCE=-800, CAT_SPEED=240, CAT_GAP_MIN=140, CAT_GAP_MAX=170;
+var cat=null, tramps=[], camY=0, airJump=true, minCamY=0; // jump не используется
 function startCat(){
-  mode='cat'; setScore(0); jumpRequest=false; airJump=true; showControls('cat');
+  mode='cat'; setScore(0); airJump=true; showControls('cat');
   var W=canvas.clientWidth,H=canvas.clientHeight;
   cat={x:W/2,y:H*0.6,vx:0,vy:0,onGround:false};
   camY = cat.y - H*0.35; minCamY = camY; tramps=[];
@@ -437,11 +465,8 @@ function addTrampCat(constY){
   var x = 60 + Math.random()*(W-120);
   tramps.push({x:x, y:newY, w:Math.max(120, Math.min(220, W*0.3)), h:18});
 }
-jumpBtn.addEventListener('pointerdown',function(e){e.preventDefault();if(mode==='cat')jumpRequest=true;},{passive:false});
-jumpBtn.addEventListener('touchstart',function(e){e.preventDefault();if(mode==='cat')jumpRequest=true;},{passive:false});
 function updateCat(dt){
   var W=canvas.clientWidth,H=canvas.clientHeight;
-  // для Cat используем ось джойстика, если активен
   var move = joy.active ? joy.ax : 0; cat.vx = move * CAT_SPEED;
   cat.vy += CAT_G * dt; cat.x += cat.vx*dt; cat.y += cat.vy*dt;
   cat.x = Math.max(16, Math.min(W-16, cat.x));
@@ -451,7 +476,6 @@ function updateCat(dt){
       cat.y=t.y-12; cat.vy=CAT_BOUNCE; cat.onGround=true; airJump=true; setScore(score+1);
     }
   }
-  if (jumpRequest){ if (cat.onGround || airJump){ cat.vy=CAT_JUMP; if(!cat.onGround) airJump=false; } jumpRequest=false; }
   var desired=cat.y - H*0.35; if (desired < minCamY) minCamY = desired;
   if (minCamY < camY){ camY += (minCamY - camY)*Math.min(1,dt*6); if (Math.abs(minCamY-camY)<0.5) camY=minCamY; }
   var topY = tramps.length ? tramps[0].y : camY + 200;
@@ -466,7 +490,6 @@ function updateCat(dt){
 function drawCat(){
   var W=canvas.clientWidth,H=canvas.clientHeight;
   ctx.fillStyle='#0a0e19'; ctx.fillRect(0,0,W,H);
-  // платформы с учётом камеры по Y
   ctx.fillStyle='#80ffd8'; ctx.strokeStyle='rgba(0,0,0,.25)'; ctx.lineWidth=1;
   for (var i=0;i<tramps.length;i++){ var t=tramps[i]; roundRect(t.x, t.y - camY, t.w, t.h, 10); ctx.fill(); ctx.stroke(); }
   drawCatSprite(cat.x, cat.y - camY);
@@ -488,16 +511,13 @@ function drawCatSprite(x,y){
 function showControls(m){
   boostBtn.style.display = (m==='worm')?'inline-block':'none';
   invisBtn.style.display = (m==='worm')?'inline-block':'none';
-  jumpBtn.style.display  = (m==='cat') ?'inline-block':'none';
 }
 
 /* ======== МЕХАНИКА/МАТЕМАТИКА ======== */
 function dist(ax,ay,bx,by){var dx=ax-bx, dy=ay-by; return Math.sqrt(dx*dx+dy*dy);}
 function getNearest(arr,x,y){ var best=null, bd=1e9; for(var i=0;i<arr.length;i++){ var d=dist(x,y,arr[i].x,arr[i].y); if(d<bd){bd=d;best=arr[i];}} return best; }
 function wrapAngle(a){ while(a>Math.PI)a-=2*Math.PI; while(a<-Math.PI)a+=2*Math.PI; return a; }
-function mixAngle(a,b,t){ // наименьшая дуга
-  var da = wrapAngle(b-a); return a + da*t;
-}
+function mixAngle(a,b,t){ var da = wrapAngle(b-a); return a + da*t; }
 
 /* ======== ГЛАВНЫЙ ЦИКЛ ======== */
 var last=Date.now(), paused=false;
