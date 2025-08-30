@@ -2,16 +2,10 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport"
-      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-<title>Cosmo Arcade — Strong Jump</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Cosmo Arcade — Safe ES5</title>
 <style>
-  html,body{
-    margin:0;height:100%;background:#0a1020;color:#fff;
-    font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
-    -webkit-touch-callout:none; -webkit-user-select:none; user-select:none;
-    touch-action:none;
-  }
+  html,body{margin:0;height:100%;background:#0a1020;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;-webkit-user-select:none;user-select:none;touch-action:none}
   #wrap{display:flex;flex-direction:column;height:100dvh}
   header{padding:8px 12px;background:#121a36;border-bottom:1px solid #22325a;display:flex;gap:8px;align-items:center}
   header h1{font-size:16px;margin:0}
@@ -19,21 +13,18 @@
   #score{padding:6px 10px;background:#0f1a36;border:1px solid #2b3f6f;border-radius:8px;font-weight:700}
 
   #stage{position:relative;flex:1;min-height:0}
-  #canvas{position:absolute;inset:0;display:block;width:100%;height:100%;touch-action:none;z-index:1;background:#0a0e19}
+  #canvas{position:absolute;inset:0;display:block;width:100%;height:100%;touch-action:none;background:#0a0e19;z-index:1}
 
-  /* Меню */
   #menu{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(8,12,24,.85);z-index:3}
   .card{background:#0f1730;border:1px solid #2b3f6f;border-radius:12px;padding:16px;max-width:420px;width:92%}
   .btn{display:block;width:100%;padding:14px 16px;margin:8px 0;background:#182a56;border:1px solid #3a5aa0;border-radius:10px;color:#fff;font-weight:700;text-align:center;cursor:pointer}
 
-  /* Управление по режимам */
   #touch{position:absolute;left:10px;right:10px;bottom:10px;display:flex;justify-content:space-between;gap:10px;z-index:4}
   .joy{position:relative;display:none;width:120px;height:120px;border-radius:50%;background:#0b1430cc;border:1px solid #2b3e68}
   .joy.small{width:100px;height:100px}
   .knob{position:absolute;left:50%;top:50%;width:56px;height:56px;border-radius:50%;background:#172a58;border:1px solid #3b5ca0;transform:translate(-50%,-50%)}
   .joy.small .knob{width:48px;height:48px}
 
-  /* Кнопка прыжка для Cat */
   #jumpBtn{
     position:absolute; right:12px; bottom:130px;
     padding:14px 18px; font-size:18px; font-weight:800; color:#fff;
@@ -58,8 +49,7 @@
         <button class="btn" data-mode="worm">🐍 Запустить Worm</button>
         <button class="btn" data-mode="cat">🐱 Запустить Cat</button>
         <p style="opacity:.8;font-size:12px;margin:6px 0 0 0">
-          Worm: левый джойстик поворачивает.<br>
-          Cat: правый джойстик ходит, ⤴︎ Jump и любой тап — мощный прыжок.
+          Worm: левый джойстик поворачивает. Cat: правый джойстик ходит, ⤴︎ Jump и любой тап — прыжок.
         </p>
       </div>
     </div>
@@ -73,214 +63,225 @@
 </div>
 
 <script>
-/* (кэш) отключаем старые SW */
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister()));
-}
+/* ---- БЕЗОПАСНЫЙ СТАРТ ---- */
+(function(){
+  try{
+    // отключим старые SW (если были), чтобы не кэшировало
+    if ('serviceWorker' in navigator && navigator.serviceWorker.getRegistrations) {
+      navigator.serviceWorker.getRegistrations().then(function(rs){ rs.forEach(function(r){ r.unregister(); }); });
+    }
+  }catch(e){}
+})();
 
-/* DOM */
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d', { alpha:false, desynchronized:true });
-const menu = document.getElementById('menu');
-const scoreEl = document.getElementById('score');
-const joyLeftEl  = document.getElementById('joyLeft');
-const joyRightEl = document.getElementById('joyRight');
-const jumpBtn    = document.getElementById('jumpBtn');
+/* ---- БАЗОВЫЕ ССЫЛКИ ---- */
+var canvas = document.getElementById('canvas');
+var ctx = canvas.getContext('2d');
+var menu = document.getElementById('menu');
+var scoreEl = document.getElementById('score');
+var joyLeftEl  = document.getElementById('joyLeft');
+var joyRightEl = document.getElementById('joyRight');
+var jumpBtn    = document.getElementById('jumpBtn');
 
 function resize(){
-  const r=Math.max(1, Math.min(devicePixelRatio||1,3));
-  const w=canvas.clientWidth=canvas.parentElement.clientWidth;
-  const h=canvas.clientHeight=canvas.parentElement.clientHeight;
-  canvas.width=Math.floor(w*r); canvas.height=Math.floor(h*r);
+  var r = Math.max(1, Math.min(window.devicePixelRatio || 1, 3));
+  var w = canvas.parentElement.clientWidth;
+  var h = canvas.parentElement.clientHeight;
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+  canvas.width = Math.floor(w*r);
+  canvas.height = Math.floor(h*r);
   ctx.setTransform(r,0,0,r,0,0);
 }
-addEventListener('resize', resize, {passive:true}); resize();
+window.addEventListener('resize', resize);
+resize();
 
-let state='menu', score=0;
-function setScore(v){ score=v|0; scoreEl.textContent=score; }
+var state = 'menu';
+var score = 0;
+function setScore(v){ score = v|0; scoreEl.textContent = score; }
+
 function showControls(mode){
-  joyLeftEl.style.display  = mode==='worm' ? 'block':'none';
-  joyRightEl.style.display = mode==='cat'  ? 'block':'none';
-  jumpBtn.style.display    = mode==='cat'  ? 'block':'none';
+  joyLeftEl.style.display  = (mode==='worm') ? 'block' : 'none';
+  joyRightEl.style.display = (mode==='cat')  ? 'block' : 'none';
+  jumpBtn.style.display    = (mode==='cat')  ? 'block' : 'none';
 }
 function showMenu(){ state='menu'; menu.style.display='flex'; showControls('none'); }
 function hideMenu(){ menu.style.display='none'; }
-document.querySelectorAll('[data-mode]').forEach(b=>{
-  b.addEventListener('click', ()=>{
-    if (b.dataset.mode==='worm'){ startWorm(); state='worm'; showControls('worm'); }
+
+var modeButtons = document.querySelectorAll('[data-mode]');
+for (var i=0;i<modeButtons.length;i++){
+  modeButtons[i].addEventListener('click', function(){
+    var m = this.getAttribute('data-mode');
+    if (m==='worm'){ startWorm(); state='worm'; showControls('worm'); }
     else { startCat(); state='cat'; showControls('cat'); }
     hideMenu();
   });
-});
+}
 
-/* ===== Джойстики ===== */
-function makeJoystick(root, radius=50){
-  const knob=root.querySelector('.knob');
-  const st={ax:0, ay:0, active:false}; let rect=null, id=null;
+/* ---- ДЖОЙСТИК (ES5) ---- */
+function makeJoystick(root, radius){
+  var knob = root.querySelector('.knob');
+  var st = {ax:0, ay:0, active:false};
+  var rect=null, id=null;
 
-  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
   function setKnob(ax,ay){
-    knob.style.left=(50+clamp(ax,-1,1)*50)+'%';
-    knob.style.top =(50+clamp(ay,-1,1)*50)+'%';
-    knob.style.transform='translate(-50%,-50%)';
+    knob.style.left = (50 + clamp(ax,-1,1)*50) + '%';
+    knob.style.top  = (50 + clamp(ay,-1,1)*50) + '%';
+    knob.style.transform = 'translate(-50%,-50%)';
   }
   function reset(){ st.ax=0; st.ay=0; st.active=false; setKnob(0,0); }
 
-  function start(x,y, pointerId){
-    id = pointerId; rect = root.getBoundingClientRect(); st.active=true;
-    const cx=rect.left+rect.width/2, cy=rect.top+rect.height/2;
+  function startXY(x,y,pid){
+    id = pid; rect = root.getBoundingClientRect(); st.active = true;
+    var cx = rect.left + rect.width/2, cy = rect.top + rect.height/2;
     st.ax = clamp((x-cx)/radius,-1,1);
     st.ay = clamp((y-cy)/radius,-1,1);
-    setKnob(st.ax,st.ay);
+    setKnob(st.ax, st.ay);
   }
-  function move(x,y){
+  function moveXY(x,y){
     if (!st.active) return;
-    const cx=rect.left+rect.width/2, cy=rect.top+rect.height/2;
+    var cx = rect.left + rect.width/2, cy = rect.top + rect.height/2;
     st.ax = clamp((x-cx)/radius,-1,1);
     st.ay = clamp((y-cy)/radius,-1,1);
-    setKnob(st.ax,st.ay);
+    setKnob(st.ax, st.ay);
   }
-  function end(){ reset(); }
+  function endXY(){ reset(); }
 
-  root.addEventListener('pointerdown', e=>{ e.preventDefault(); root.setPointerCapture?.(e.pointerId); start(e.clientX,e.clientY,e.pointerId); }, {passive:false});
-  root.addEventListener('pointermove',  e=>{ if(e.pointerId!==id) return; move(e.clientX,e.clientY); });
-  root.addEventListener('pointerup',    e=>{ if(e.pointerId!==id) return; end(); });
-  root.addEventListener('pointercancel',end);
+  root.addEventListener('pointerdown', function(e){ e.preventDefault(); if (root.setPointerCapture) root.setPointerCapture(e.pointerId); startXY(e.clientX,e.clientY,e.pointerId); }, {passive:false});
+  root.addEventListener('pointermove',  function(e){ if(e.pointerId!==id) return; moveXY(e.clientX,e.clientY); });
+  root.addEventListener('pointerup',    function(e){ if(e.pointerId!==id) return; endXY(); });
+  root.addEventListener('pointercancel',function(){ endXY(); });
 
-  root.addEventListener('touchstart', e=>{ e.preventDefault(); const t=e.changedTouches[0]; start(t.clientX,t.clientY,'t'); }, {passive:false});
-  root.addEventListener('touchmove',  e=>{ e.preventDefault(); const t=e.changedTouches[0]; move(t.clientX,t.clientY); }, {passive:false});
-  root.addEventListener('touchend',   e=>{ e.preventDefault(); end(); }, {passive:false});
+  root.addEventListener('touchstart', function(e){ e.preventDefault(); var t=e.changedTouches[0]; startXY(t.clientX,t.clientY,'t'); }, {passive:false});
+  root.addEventListener('touchmove',  function(e){ e.preventDefault(); var t=e.changedTouches[0]; moveXY(t.clientX,t.clientY); }, {passive:false});
+  root.addEventListener('touchend',   function(e){ e.preventDefault(); endXY(); }, {passive:false});
 
-  setKnob(0,0); return st;
+  setKnob(0,0);
+  return st;
 }
-const joyLeft  = makeJoystick(joyLeftEl, 50); // Worm
-const joyRight = makeJoystick(joyRightEl, 40); // Cat
+var joyLeft  = makeJoystick(joyLeftEl, 50); // Worm
+var joyRight = makeJoystick(joyRightEl, 40); // Cat
 
-/* ===== WORM (минимум) ===== */
-let worm, foods=[];
+/* ---- WORM (минимум) ---- */
+var worm=null, foods=[];
 function startWorm(){
   setScore(0);
-  const W=canvas.clientWidth,H=canvas.clientHeight;
+  var W=canvas.clientWidth, H=canvas.clientHeight;
   worm={x:W/2,y:H/2, ang:-Math.PI/2, spd:Math.min(W,H)*0.19, trail:[], segs:14, step:4};
-  foods = Array.from({length:Math.round((W*H)/9000)},()=>({x:Math.random()*W,y:Math.random()*H}));
+  foods=[];
+  var n=Math.round((W*H)/9000); for(var i=0;i<n;i++) foods.push({x:Math.random()*W, y:Math.random()*H});
 }
 function updateWorm(dt){
-  if (joyLeft.active){ worm.ang=Math.atan2(joyLeft.ay, joyLeft.ax); }
+  if (joyLeft.active){ worm.ang = Math.atan2(joyLeft.ay, joyLeft.ax); }
   worm.x += Math.cos(worm.ang)*worm.spd*dt;
   worm.y += Math.sin(worm.ang)*worm.spd*dt;
-  const W=canvas.clientWidth,H=canvas.clientHeight;
+  var W=canvas.clientWidth,H=canvas.clientHeight;
   if (worm.x<0) worm.x+=W; if (worm.x>W) worm.x-=W;
   if (worm.y<0) worm.y+=H; if (worm.y>H) worm.y-=H;
   worm.trail.unshift({x:worm.x,y:worm.y}); if (worm.trail.length>1400) worm.trail.pop();
-  for (let i=foods.length-1;i>=0;i--){
-    const f=foods[i]; if (Math.hypot(f.x-worm.x,f.y-worm.y)<12){ foods.splice(i,1); setScore(score+5); foods.push({x:Math.random()*W,y:Math.random()*H}); }
+  for (var i=foods.length-1;i>=0;i--){
+    var f=foods[i]; if (Math.sqrt(Math.pow(f.x-worm.x,2)+Math.pow(f.y-worm.y,2))<12){
+      foods.splice(i,1); setScore(score+5); foods.push({x:Math.random()*W,y:Math.random()*H});
+    }
   }
 }
 function drawWorm(){
-  const W=canvas.clientWidth,H=canvas.clientHeight;
+  var W=canvas.clientWidth,H=canvas.clientHeight;
   ctx.fillStyle='#0a0e19'; ctx.fillRect(0,0,W,H);
-  ctx.fillStyle='#67c8ff'; foods.forEach(f=>{ ctx.beginPath(); ctx.arc(f.x,f.y,3.5,0,Math.PI*2); ctx.fill(); });
-  for (let s=0;s<worm.segs;s++){
-    const p=worm.trail[s*worm.step]||worm, r=Math.max(3,9-s*0.08);
-    const hue=(s*14+(performance.now()/40)%360)%360;
-    ctx.fillStyle=`hsl(${hue} 90% 55%)`;
+  ctx.fillStyle='#67c8ff'; for (var i=0;i<foods.length;i++){ var f=foods[i]; ctx.beginPath(); ctx.arc(f.x,f.y,3.5,0,Math.PI*2); ctx.fill(); }
+  for (var s=0;s<worm.segs;s++){
+    var p = worm.trail[s*worm.step] || worm, r=Math.max(3,9-s*0.08);
+    var hue=(s*14+(Date.now()/40)%360)%360;
+    ctx.fillStyle='hsl('+hue+' 90% 55%)';
     ctx.beginPath(); ctx.arc(p.x,p.y,r,0,Math.PI*2); ctx.fill();
   }
 }
 
-/* ===== CAT — усиленный прыжок до следующей платформы ===== */
-const CAT = {
-  G: 1400,             // гравитация (px/s^2)
-  jumpImpulse: -760,   // сила прыжка (px/s, вверх отрицательная)
-  bounce: -800,        // сила отскока от батута
-  moveSpeed: 240,      // скорость ходьбы
-  gapMin: 140,         // вертикальный зазор между батутами
-  gapMax: 170
-};
+/* ---- CAT — усиленный прыжок ---- */
+var CAT_G=1400, CAT_JUMP=-760, CAT_BOUNCE=-800, CAT_SPEED=240, CAT_GAP_MIN=140, CAT_GAP_MAX=170;
+var cat=null, tramps=[], camY=0, jumpRequest=false, airJump=true;
 
-let cat, tramps=[], camY=0, jumpRequest=false, airJump=true;
 function startCat(){
   setScore(0); camY=0; jumpRequest=false; airJump=true;
-  const W=canvas.clientWidth;
+  var W=canvas.clientWidth;
   cat={x:W/2,y:220,vx:0,vy:0,onGround:false};
-  tramps=[]; for(let i=0;i<14;i++) addTramp(i===0?260:null);
+  tramps=[]; for (var i=0;i<14;i++) addTramp(i===0?260:null);
 }
-function addTramp(constY=null){
-  const W=canvas.clientWidth;
-  const gap = CAT.gapMin + Math.random()*(CAT.gapMax-CAT.gapMin);
-  const newY = constY!==null ? constY : (tramps.length? tramps[tramps.length-1].y - gap : 260);
-  const x=60+Math.random()*(W-120);
-  tramps.push({x, y:newY, w:Math.max(120, Math.min(220, W*0.3)), h:18});
+function addTramp(constY){
+  var W=canvas.clientWidth;
+  var gap = CAT_GAP_MIN + Math.random()*(CAT_GAP_MAX-CAT_GAP_MIN);
+  var newY = (constY!==null && constY!==undefined) ? constY : (tramps.length ? tramps[tramps.length-1].y - gap : 260);
+  var x = 60 + Math.random()*(W-120);
+  tramps.push({x:x, y:newY, w:Math.max(120, Math.min(220, W*0.3)), h:18});
 }
 
-/* приём сигнала прыжка — везде (кнопка и любой тап) */
+/* прыжок — ловим везде (кнопка и любой тап) */
 function requestJump(){ if (state==='cat') jumpRequest = true; }
-['pointerdown','mousedown'].forEach(evt=>{
-  canvas.addEventListener(evt, e=>{ requestJump(); }, {passive:false});
-  document.body.addEventListener(evt, e=>{ requestJump(); }, {passive:false});
+['pointerdown','mousedown'].forEach(function(evt){
+  canvas.addEventListener(evt, function(){ requestJump(); }, {passive:false});
+  document.body.addEventListener(evt, function(){ requestJump(); }, {passive:false});
 });
-['touchstart'].forEach(evt=>{
-  canvas.addEventListener(evt, e=>{ e.preventDefault(); requestJump(); }, {passive:false});
-  document.body.addEventListener(evt, e=>{ e.preventDefault(); requestJump(); }, {passive:false});
+['touchstart'].forEach(function(evt){
+  canvas.addEventListener(evt, function(e){ e.preventDefault(); requestJump(); }, {passive:false});
+  document.body.addEventListener(evt, function(e){ e.preventDefault(); requestJump(); }, {passive:false});
 });
-jumpBtn.addEventListener('pointerdown', e=>{ e.preventDefault(); requestJump(); }, {passive:false});
-jumpBtn.addEventListener('touchstart',  e=>{ e.preventDefault(); requestJump(); }, {passive:false});
+jumpBtn.addEventListener('pointerdown', function(e){ e.preventDefault(); requestJump(); }, {passive:false});
+jumpBtn.addEventListener('touchstart',  function(e){ e.preventDefault(); requestJump(); }, {passive:false});
 
-/* логика Cat */
 function updateCat(dt){
-  const W=canvas.clientWidth,H=canvas.clientHeight;
+  var W=canvas.clientWidth, H=canvas.clientHeight;
 
-  // ходьба джойстиком
-  const move = joyRight.ax;
-  cat.vx = move * CAT.moveSpeed;
+  // ходьба
+  var move = joyRight.ax; cat.vx = move * CAT_SPEED;
 
   // физика
-  cat.vy += CAT.G * dt;
+  cat.vy += CAT_G * dt;
   cat.x += cat.vx * dt;
   cat.y += cat.vy * dt;
   cat.x = Math.max(16, Math.min(W-16, cat.x));
 
-  // платформы (чуть расширяем окно приземления)
+  // платформы
   cat.onGround=false;
-  for(const t of tramps){
+  for (var i=0;i<tramps.length;i++){
+    var t=tramps[i];
     if (cat.vy>0 && cat.y+12>=t.y && cat.y+12<=t.y+t.h+3 && cat.x>t.x && cat.x<t.x+t.w){
-      cat.y=t.y-12; cat.vy=CAT.bounce; cat.onGround=true; airJump=true; setScore(score+1);
+      cat.y=t.y-12; cat.vy=CAT_BOUNCE; cat.onGround=true; airJump=true; setScore(score+1);
     }
   }
 
-  // прыжок — всегда по запросу: с земли или один раз в воздухе
+  // прыжок
   if (jumpRequest){
     if (cat.onGround || airJump){
-      cat.vy = CAT.jumpImpulse;
-      if (!cat.onGround) airJump = false;
+      cat.vy = CAT_JUMP;
+      if (!cat.onGround) airJump=false;
     }
     jumpRequest=false;
   }
 
-  // управление камерой и спавн
-  const highest = tramps.reduce((m,t)=>Math.min(m,t.y), tramps[0]?.y||0);
-  while (highest - camY > -H*1.2 && tramps.length < 40) addTramp();
-  for (let i=tramps.length-1;i>=0;i--){
-    if (tramps[i].y - camY > H+160){ tramps.splice(i,1); addTramp(tramps.reduce((m,t)=>Math.min(m,t.y), 9999) - CAT.gapMin); }
+  // камера/спавн
+  var highest = tramps[0] ? tramps[0].y : 0;
+  for (i=1;i<tramps.length;i++){ if (tramps[i].y < highest) highest = tramps[i].y; }
+  while (highest - camY > -H*1.2 && tramps.length < 40){ addTramp(); highest = Math.min(highest, tramps[tramps.length-1].y); }
+  for (i=tramps.length-1;i>=0;i--){
+    if (tramps[i].y - camY > H+160){ tramps.splice(i,1); addTramp(highest - (CAT_GAP_MIN + Math.random()*(CAT_GAP_MAX-CAT_GAP_MIN))); }
   }
   if (cat.y - camY > H + 200){ showMenu(); }
 }
+
 function drawCat(){
-  const W=canvas.clientWidth,H=canvas.clientHeight;
+  var W=canvas.clientWidth,H=canvas.clientHeight;
   ctx.fillStyle='#0a0e19'; ctx.fillRect(0,0,W,H);
-  // платформы
   ctx.fillStyle='#80ffd8'; ctx.strokeStyle='rgba(0,0,0,.25)'; ctx.lineWidth=1;
-  tramps.forEach(t=>{ roundRect(t.x, t.y - camY, t.w, t.h, 10); ctx.fill(); ctx.stroke(); });
-  // кот (простая форма)
+  for (var i=0;i<tramps.length;i++){ var t=tramps[i]; roundRect(t.x, t.y - camY, t.w, t.h, 10); ctx.fill(); ctx.stroke(); }
   drawCatSprite(cat.x, cat.y - camY);
 }
 
-/* Утилиты рисования */
+/* ---- Утилиты ---- */
 function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
 function drawCatSprite(x,y){
   ctx.save(); ctx.translate(x,y);
   ctx.fillStyle='rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(0,16,14,6,0,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle='#f59e0b'; roundRect(-12,-6,24,26,8); ctx.fill();       /* тело */
+  ctx.fillStyle='#f59e0b'; roundRect(-12,-6,24,26,8); ctx.fill();             /* тело */
   ctx.beginPath(); ctx.fillStyle='#fca5a5'; ctx.arc(0,-16,11,0,Math.PI*2); ctx.fill(); /* голова */
   ctx.beginPath(); ctx.moveTo(-8,-20); ctx.lineTo(-3,-28); ctx.lineTo(2,-20); ctx.closePath(); ctx.fill(); /* ухо */
   ctx.beginPath(); ctx.moveTo(8,-20);  ctx.lineTo(3,-28);  ctx.lineTo(-2,-20); ctx.closePath(); ctx.fill();/* ухо */
@@ -289,11 +290,12 @@ function drawCatSprite(x,y){
   ctx.restore();
 }
 
-/* Главный цикл */
-let last=performance.now(), paused=false;
-function loop(now){
-  const dt=Math.min(0.033, (now-last)/1000); last=now;
-  if(!paused){
+/* ---- Главный цикл ---- */
+var last = Date.now(), paused=false;
+function loop(){
+  var now = Date.now();
+  var dt = Math.min(33, now-last)/1000; last = now;
+  if (!paused){
     if (state==='worm'){ updateWorm(dt); drawWorm(); }
     else if (state==='cat'){ updateCat(dt); drawCat(); }
     else { ctx.fillStyle='#0a0e19'; ctx.fillRect(0,0,canvas.clientWidth,canvas.clientHeight); }
@@ -301,7 +303,7 @@ function loop(now){
   requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);
-document.addEventListener('visibilitychange', ()=> paused=document.hidden);
+document.addEventListener('visibilitychange', function(){ paused=document.hidden; });
 
 /* старт */
 showMenu();
