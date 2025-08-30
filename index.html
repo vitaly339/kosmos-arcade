@@ -1,544 +1,72 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-<title>Cosmo Arcade — Worm + Cat + Bots + Camera</title>
-<style>
-  html,body{margin:0;height:100%;background:#0a1020;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;-webkit-user-select:none;user-select:none;touch-action:none}
-  #wrap{display:flex;flex-direction:column;height:100dvh}
-  header{padding:8px 12px;background:#121a36;border-bottom:1px solid #22325a;display:flex;gap:8px;align-items:center}
-  header h1{font-size:16px;margin:0}
-  #ui{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-  .hbtn{padding:6px 10px;background:#182a56;border:1px solid #3a5aa0;border-radius:8px;color:#fff;font-weight:700;cursor:pointer}
-  #score{padding:6px 10px;background:#0f1a36;border:1px solid #2b3f6f;border-radius:8px;font-weight:700;min-width:64px;text-align:center}
-
-  #stage{position:relative;flex:1;min-height:0}
-  #canvas{position:absolute;inset:0;display:block;width:100%;height:100%;touch-action:none;background:#070c18;z-index:1}
-
-  /* Оверлеи */
-  .overlay{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(8,12,24,.85);z-index:20}
-  .card{background:#0f1730;border:1px solid #2b3f6f;border-radius:12px;padding:16px;max-width:600px;width:92%}
-  .row{display:flex;gap:8px;flex-wrap:wrap}
-  .btn{display:inline-block;padding:12px 14px;background:#182a56;border:1px solid #3a5aa0;border-radius:10px;color:#fff;font-weight:700;cursor:pointer}
-  .field{display:flex;gap:8px;align-items:center;margin:6px 0}
-  input[type="text"],input[type="number"]{background:#0f1a36;color:#fff;border:1px solid #2b3f6f;border-radius:8px;padding:8px 10px;min-width:160px}
-
-  /* Плавающий джойстик */
-  #joy{position:absolute;left:0;top:0;width:0;height:0;pointer-events:none;z-index:5;display:none}
-  .joy-base{position:absolute;width:120px;height:120px;margin-left:-60px;margin-top:-60px;border-radius:50%;background:#0b1430cc;border:1px solid #2b3e68}
-  .joy-knob{position:absolute;left:0;top:0;width:56px;height:56px;margin-left:-28px;margin-top:-28px;border-radius:50%;background:#172a58;border:1px solid #3b5ca0}
-
-  /* Кнопки Worm */
-  #boostBtn,#invisBtn{position:absolute;left:14px;bottom:18px;display:none;z-index:6}
-  #boostBtn{transform:translateX(130px);background:#0e8a6a;border-color:#33c49f}
-  #invisBtn{transform:translateX(260px);background:#8a0e6a;border-color:#d658b1}
-
-  /* Видео-реклама */
-  #adWrap{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.75);z-index:30}
-  #adCard{background:#0b1024;border:1px solid #2b3f6f;border-radius:12px;padding:10px;max-width:80%;width:560px}
-  #adVideo{width:100%;max-height:70dvh;background:#000;border-radius:8px}
-  #skipAd{margin-top:8px;width:100%}
-
-  /* Подпись */
-  #footer{position:absolute;left:0;right:0;bottom:2px;text-align:center;font-size:12px;opacity:.8;z-index:2;pointer-events:none}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Kosmos.Worm — выбор режима</title>
+  <meta name="theme-color" content="#0b1020" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css" />
+  <style>
+    body.playing-worm header,
+    body.playing-worm main,
+    body.playing-worm footer {
+      display: none; /* скрываем меню, когда идёт игра */
+    }
+  </style>
 </head>
 <body>
-<div id="wrap">
-  <header>
-    <h1>Cosmo Arcade</h1>
-    <div id="ui">
-      <div id="score">0</div>
-      <button id="menuBtn" class="hbtn">В меню</button>
-      <button id="switchBtn" class="hbtn">Переключить игру</button>
-      <button id="shopBtn" class="hbtn">Магазин</button>
-      <button id="recordsBtn" class="hbtn">Рекорды</button>
+  <div class="bg-decor"></div>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand__spark">✦</span>
+      <span class="brand__title">Kosmos.<span>Worm</span></span>
     </div>
+    <nav class="top-actions">
+      <button class="chip" id="score-chip">0</button>
+      <button class="chip" id="btn-menu">В меню</button>
+      <button class="chip" id="btn-switch">Переключить игру</button>
+      <button class="chip" id="btn-shop">Магазин</button>
+      <button class="chip" id="btn-records">Рекорды</button>
+    </nav>
   </header>
 
-  <div id="stage">
-    <canvas id="canvas"></canvas>
+  <main class="hero wrap">
+    <section class="hero__copy">
+      <h1 class="glow">Выбирай&nbsp;режим</h1>
+      <p class="subtitle">
+        <strong>Worm</strong>: плавающий джойстик, ускорение, фрукты, бомбы, боты, камера по карте.
+        <br />
+        <strong>Cat</strong>: движение по джойстику, отскоки — без кнопки прыжка.
+      </p>
 
-    <!-- ГЛАВНОЕ МЕНЮ -->
-    <div id="mainMenu" class="overlay" style="display:flex">
-      <div class="card">
-        <h3 style="margin:0 0 8px 0">Выбирай режим</h3>
-        <div class="row">
-          <button class="btn" data-mode="worm">🐍 Worm</button>
-          <button class="btn" data-mode="cat">🐱 Cat</button>
-        </div>
-        <p style="opacity:.85;font-size:12px;margin-top:8px">Worm: плавающий джойстик, ускорение, фрукты, бомбы, боты, камера по карте. Cat: движение по джойстику, отскоки — без кнопки прыжка.</p>
+      <div class="mode-buttons">
+        <button class="mode mode--worm" id="btn-worm" aria-label="Режим Worm">
+          <span class="mode__icon">🐍</span>
+          <span class="mode__text">Worm</span>
+        </button>
+        <button class="mode mode--cat" id="btn-cat" aria-label="Режим Cat">
+          <span class="mode__icon">🐱</span>
+          <span class="mode__text">Cat</span>
+        </button>
       </div>
-    </div>
+    </section>
 
-    <!-- СТАРТ-НАСТРОЙКА ПЕРЕД ИГРОЙ -->
-    <div id="preStart" class="overlay">
-      <div class="card">
-        <h3 style="margin:0 0 10px 0">Старт игры</h3>
-        <div class="field">
-          <label for="playerName">Имя змейки:</label>
-          <input id="playerName" type="text" placeholder="ваше имя" maxlength="16">
-        </div>
-        <div id="wormOpts">
-          <div class="field">
-            <label for="botCount">Ботов (планеты):</label>
-            <input id="botCount" type="number" min="0" max="12" value="6" style="width:90px">
-          </div>
-          <div class="field">
-            <button id="preInvis" class="btn">Включить «Невидимка» при старте (если куплена)</button>
-          </div>
-        </div>
-        <div class="row" style="margin-top:10px">
-          <button id="startPlay" class="btn">Играть</button>
-          <button id="preCancel" class="btn">Назад</button>
-        </div>
-      </div>
-    </div>
+    <figure class="hero__art">
+      <img src="./assets/snake-hero.jpg" alt="Змейка из Kosmos.Worm" />
+      <div class="shine"></div>
+    </figure>
+  </main>
 
-    <!-- МАГАЗИН -->
-    <div id="shop" class="overlay">
-      <div class="card">
-        <h3 style="margin:0 0 8px 0">Магазин бустов</h3>
-        <p id="bank" style="margin:4px 0 10px 0">Баланс: 0 очков</p>
-        <div class="row">
-          <button class="btn" id="buyInvis">Купить «Невидимка» (200)</button>
-        </div>
-        <div class="row" style="margin-top:8px">
-          <button class="btn" id="shopClose">Закрыть</button>
-        </div>
-        <p style="opacity:.75;font-size:12px;margin-top:8px">«Невидимка»: проход через бомбы/препятствия ~10 сек.</p>
-      </div>
-    </div>
+  <footer class="footer wrap">
+    <span>made by kosmos.bud 2k25</span>
+  </footer>
 
-    <!-- РЕКОРДЫ -->
-    <div id="records" class="overlay">
-      <div class="card">
-        <h3 style="margin:0 0 8px 0">Таблица рекордов</h3>
-        <div id="recAll" style="font-family:monospace;white-space:pre"></div>
-        <h4 style="margin:10px 0 4px 0">Ваши лучшие</h4>
-        <div id="recMine" style="font-family:monospace;white-space:pre"></div>
-        <div class="row" style="margin-top:8px">
-          <button class="btn" id="recClose">Закрыть</button>
-          <button class="btn" id="recReset">Сбросить рекорды</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- РЕКЛАМКА (видео) -->
-    <div id="adWrap" class="overlay">
-      <div id="adCard">
-        <video id="adVideo" playsinline muted autoplay controls></video>
-        <button class="btn" id="skipAd">Пропустить</button>
-      </div>
-    </div>
-
-    <!-- Плавающий джойстик -->
-    <div id="joy">
-      <div class="joy-base"></div>
-      <div class="joy-knob"></div>
-    </div>
-
-    <!-- Кнопки игры -->
-    <button id="boostBtn" class="btn">Boost</button>
-    <button id="invisBtn" class="btn">Невидимка</button>
-
-    <div id="footer">made by kosmos.bud 2k25</div>
-  </div>
-</div>
-
-<script>
-/* ======== УТИЛИТЫ/ХРАНЕНИЕ ======== */
-var LS={get:function(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-var playerName = LS.get('playerName','Player');
-var bank = LS.get('bank',0);
-var invCount = LS.get('invCount',0);
-
-/* ======== DOM ======== */
-var canvas=document.getElementById('canvas'), ctx=canvas.getContext('2d');
-var mainMenu=document.getElementById('mainMenu'), preStart=document.getElementById('preStart');
-var wormOpts=document.getElementById('wormOpts'), startPlay=document.getElementById('startPlay'), preCancel=document.getElementById('preCancel');
-var nameInput=document.getElementById('playerName'), botCountInput=document.getElementById('botCount'), preInvisBtn=document.getElementById('preInvis');
-var shop=document.getElementById('shop'), bankEl=document.getElementById('bank'), buyInvisBtn=document.getElementById('buyInvis'), shopClose=document.getElementById('shopClose');
-var records=document.getElementById('records'), recAll=document.getElementById('recAll'), recMine=document.getElementById('recMine'), recClose=document.getElementById('recClose'), recReset=document.getElementById('recReset');
-var menuBtn=document.getElementById('menuBtn'), switchBtn=document.getElementById('switchBtn'), shopBtn=document.getElementById('shopBtn'), recordsBtn=document.getElementById('recordsBtn');
-var scoreEl=document.getElementById('score');
-var adWrap=document.getElementById('adWrap'), adVideo=document.getElementById('adVideo'), skipAd=document.getElementById('skipAd');
-
-var joyWrap=document.getElementById('joy'), joyBase=joyWrap.querySelector('.joy-base'), joyKnob=joyWrap.querySelector('.joy-knob');
-var boostBtn=document.getElementById('boostBtn'), invisBtn=document.getElementById('invisBtn');
-
-/* ======== КАНВАС ======== */
-function resize(){var r=Math.max(1,Math.min(window.devicePixelRatio||1,3)),w=canvas.parentElement.clientWidth,h=canvas.parentElement.clientHeight;canvas.style.width=w+'px';canvas.style.height=h+'px';canvas.width=Math.floor(w*r);canvas.height=Math.floor(h*r);ctx.setTransform(r,0,0,r,0,0);}
-addEventListener('resize',resize);resize();
-
-/* ======== ОБЩЕЕ СОСТОЯНИЕ ======== */
-var mode='menu', score=0;
-function setScore(v){score=v|0;scoreEl.textContent=score;}
-function showMain(){mode='menu';mainMenu.style.display='flex';hide(preStart);showControls('none');}
-function hide(el){ if(el) el.style.display='none'; }
-function show(el){ if(el) el.style.display='flex'; }
-
-/* кнопки верхней панели */
-menuBtn.onclick = showMain;
-switchBtn.onclick=function(){ if(mode==='worm'){ startCat(); } else if(mode==='cat'){ openPreStart('worm'); } };
-shopBtn.onclick=function(){updateBankUI();show(shop);}
-recordsBtn.onclick=function(){updateRecordsUI();show(records);}
-shopClose.onclick=function(){hide(shop);}
-recClose.onclick=function(){hide(records);}
-recReset.onclick=function(){ if(confirm('Сбросить рекорды?')){ LS.set('records',[]); updateRecordsUI(); } };
-
-document.querySelectorAll('[data-mode]').forEach(function(b){ b.onclick=function(){ openPreStart(b.getAttribute('data-mode')); }; });
-
-/* ======== ПРЕСТАРТ-ОКНО ======== */
-var preTarget='worm', preInvis=false;
-function openPreStart(target){
-  preTarget=target||'worm';
-  nameInput.value = playerName || 'Player';
-  wormOpts.style.display = preTarget==='worm' ? '' : 'none';
-  hide(mainMenu); show(preStart);
-}
-preCancel.onclick=function(){ hide(preStart); showMain(); };
-preInvisBtn.onclick=function(){
-  if(invCount>0){ preInvis=!preInvis; alert('Невидимка при старте: '+(preInvis?'ВКЛ':'ВЫКЛ')); }
-  else alert('У вас нет купленной невидимки. Купите в магазине.');
-};
-startPlay.onclick=function(){
-  playerName=(nameInput.value||'Player').slice(0,16); LS.set('playerName',playerName);
-  hide(preStart);
-  if (preTarget==='worm'){ startWorm(parseInt(botCountInput.value,10)||0); }
-  else { startCat(); }
-};
-
-/* ======== МАГАЗИН/РЕКОРДЫ ======== */
-function updateBankUI(){ bankEl.textContent='Баланс: '+bank+' очков'; }
-buyInvisBtn.onclick=function(){ if(bank>=200){ bank-=200; invCount++; LS.set('bank',bank); LS.set('invCount',invCount); updateBankUI(); alert('Невидимка куплена'); } else alert('Недостаточно очков'); };
-function fmtTable(a){var s='';for(var i=0;i<a.length;i++){var r=a[i];s+=(i+1)+'. '+(r.name||'Player')+' — '+r.score+'\n';}return s||'(пусто)';}
-function updateRecordsUI(){ var all=LS.get('records',[]).sort(function(a,b){return b.score-a.score}); recAll.textContent=fmtTable(all.slice(0,10)); var mine=all.filter(function(r){return r.name===playerName}).sort(function(a,b){return b.score-a.score}); recMine.textContent=fmtTable(mine.slice(0,10)); }
-function saveRecord(name,sc){ var arr=LS.get('records',[]); arr.push({name:name||'Player',score:sc|0,ts:Date.now()}); LS.set('records',arr); }
-
-/* ======== ПЛАВАЮЩИЙ ДЖОЙСТИК ======== */
-var joy={active:false, ox:0, oy:0, ax:0, ay:0};
-function showJoy(x,y){ joyWrap.style.display='block'; joyWrap.style.transform='translate('+x+'px,'+y+'px)'; joyBase.style.transform='translate(0,0)'; joyKnob.style.transform='translate(0,0)'; }
-function moveJoy(x,y){
-  var dx=x-joy.ox, dy=y-joy.oy, len=Math.sqrt(dx*dx+dy*dy)||1, maxR=50;
-  var nx=dx/len, ny=dy/len, r=Math.min(len,maxR);
-  joy.ax = (dx===0 && dy===0)?0:(dx/Math.max(len,1));
-  joy.ay = (dx===0 && dy===0)?0:(dy/Math.max(len,1));
-  joyKnob.style.transform='translate('+ (nx*r) +'px,'+ (ny*r) +'px)';
-}
-function hideJoy(){ joyWrap.style.display='none'; joy.active=false; joy.ax=joy.ay=0; }
-canvas.addEventListener('pointerdown', function(e){
-  if(mode!=='worm' && mode!=='cat') return;
-  e.preventDefault();
-  joy.active=true; joy.ox=e.clientX; joy.oy=e.clientY; showJoy(joy.ox, joy.oy);
-  moveJoy(e.clientX,e.clientY);
-},{passive:false});
-canvas.addEventListener('pointermove', function(e){ if(!joy.active) return; moveJoy(e.clientX,e.clientY); });
-canvas.addEventListener('pointerup', function(){ hideJoy(); });
-canvas.addEventListener('pointercancel', function(){ hideJoy(); });
-
-/* ======== WORM — КАМЕРА, БОТЫ, МИР ======== */
-var world={w:3200,h:2000};
-var cam={x:0,y:0};
-var worm=null, foods=[], bombs=[], bots=[];
-var boostHold=false, boostMul=1.6;
-var invis=false, invisTimer=0;
-
-var FRUITS=[ {c:'#ff6b6b',p:5}, {c:'#ffd166',p:7}, {c:'#c084fc',p:9}, {c:'#7dd3fc',p:12} ];
-var PLANETS=['Земля','Марс','Юпитер','Венера','Сатурн','Уран','Нептун','Меркурий','Плутон','Ио','Европа','Титан'];
-
-function startWorm(botN){
-  mode='worm'; setScore(0);
-  foods=[]; bombs=[]; bots=[];
-  // игрок
-  worm=makeSnake(playerName, world.w*0.5, world.h*0.5, true);
-  // еда/бомбы
-  var dens = Math.round((world.w*world.h)/35000);
-  for(var i=0;i<dens;i++) spawnFruit();
-  for(i=0;i<Math.ceil(dens/6);i++) spawnBomb();
-  // боты
-  botN = Math.max(0, Math.min(botN|0, PLANETS.length));
-  for(i=0;i<botN;i++){
-    var x=Math.random()*world.w, y=Math.random()*world.h, nm=PLANETS[i%PLANETS.length];
-    bots.push(makeSnake(nm,x,y,false));
-  }
-  // камера к игроку
-  centerCameraOn(worm);
-  // пред-невидимка
-  if(preInvis && invCount>0){ invCount--; LS.set('invCount',invCount); invis=true; invisTimer=10; }
-  showControls('worm');
-}
-function makeSnake(name,x,y,isPlayer){
-  return {name:name||'Player', x:x,y:y, ang:Math.random()*Math.PI*2, spd:140, trail:[], segs:16, step:4, alive:true, ai:!isPlayer, aiTurn:0, color:isPlayer?'player':'bot'};
-}
-function spawnFruit(){ foods.push({x:Math.random()*world.w,y:Math.random()*world.h,r:4,c:FRUITS[(Math.random()*FRUITS.length)|0]}); }
-function spawnBomb(){ bombs.push({x:Math.random()*world.w,y:Math.random()*world.h,r:10}); }
-function wrapPos(o){ if(o.x<0)o.x+=world.w; if(o.x>world.w)o.x-=world.w; if(o.y<0)o.y+=world.h; if(o.y>world.h)o.y-=world.h; }
-function centerCameraOn(o){ var W=canvas.clientWidth,H=canvas.clientHeight; cam.x=o.x - W*0.5; cam.y=o.y - H*0.5; }
-function clampCam(){ var W=canvas.clientWidth,H=canvas.clientHeight; cam.x=Math.max(0,Math.min(world.w-W,cam.x)); cam.y=Math.max(0,Math.min(world.h-H,cam.y)); }
-
-function updateWorm(dt){
-  // управление игрока
-  var ang = worm.ang;
-  if (joy.active){ ang = Math.atan2(joy.ay, joy.ax); }
-  worm.ang = ang;
-  var spd = worm.spd * (boostHold?boostMul:1);
-  worm.x += Math.cos(worm.ang)*spd*dt;
-  worm.y += Math.sin(worm.ang)*spd*dt;
-  wrapPos(worm);
-  worm.trail.unshift({x:worm.x,y:worm.y}); if(worm.trail.length>1600) worm.trail.pop();
-
-  // боты — ИИ: тянутся к ближайшему фрукту, избегают бомбу, немного шумят
-  for(var i=0;i<bots.length;i++){
-    var b=bots[i];
-    var tgt=getNearest(foods,b.x,b.y);
-    var avoid=getNearest(bombs,b.x,b.y);
-    var turn = b.ang;
-    if (tgt){ var a=Math.atan2(tgt.y-b.y, tgt.x-b.x); turn = mixAngle(b.ang,a,0.08); }
-    if (avoid && dist(b.x,b.y,avoid.x,avoid.y)<120){
-      var aa=Math.atan2(b.y-avoid.y, b.x-avoid.x);
-      turn = mixAngle(turn, aa, 0.25);
-    }
-    b.aiTurn=(b.aiTurn||0) + (Math.random()-0.5)*0.02;
-    b.ang = wrapAngle(turn + b.aiTurn);
-    var sp= b.spd* (0.95+Math.random()*0.1);
-    b.x += Math.cos(b.ang)*sp*dt; b.y += Math.sin(b.ang)*sp*dt; wrapPos(b);
-    b.trail.unshift({x:b.x,y:b.y}); if(b.trail.length>1400) b.trail.pop();
-    // боты едят фрукты
-    for(var fi=foods.length-1;fi>=0;fi--){ if(dist(b.x,b.y,foods[fi].x,foods[fi].y)<12){ foods.splice(fi,1); spawnFruit(); } }
-  }
-
-  // еда для игрока
-  for(i=foods.length-1;i>=0;i--){
-    var f=foods[i];
-    if (dist(worm.x,worm.y,f.x,f.y)<12){
-      foods.splice(i,1); setScore(score+f.c.p); bank+=f.c.p; spawnFruit();
-    }
-  }
-
-  // бомбы → рекламка + рестарт
-  for(i=bombs.length-1;i>=0;i--){
-    var bb=bombs[i];
-    if(!invis && dist(worm.x,worm.y,bb.x,bb.y)<14){
-      bombs.splice(i,1);
-      triggerAdAndRestart();
-      break;
-    }
-  }
-
-  // столкновение игрока с ботами → бот исчезает, сыплет еду, игрок растёт на 80% длины бота
-  for (var bi = bots.length - 1; bi >= 0; bi--) {
-    var b2 = bots[bi];
-    if (dist(worm.x, worm.y, b2.x, b2.y) < 14) {
-      absorbBot(bi);
-      break;
-    }
-  }
-
-  // таймер невидимки
-  if(invis){ invisTimer-=dt; if(invisTimer<=0){invis=false;} }
-
-  // камера тянется за игроком
-  var W=canvas.clientWidth,H=canvas.clientHeight;
-  var targetX=worm.x - W*0.5, targetY=worm.y - H*0.5;
-  cam.x += (targetX - cam.x) * Math.min(1, dt*3);
-  cam.y += (targetY - cam.y) * Math.min(1, dt*3);
-  clampCam();
-}
-function drawWorm(){
-  var W=canvas.clientWidth,H=canvas.clientHeight;
-  // фон-сетка
-  ctx.fillStyle='#081022'; ctx.fillRect(0,0,W,H);
-  ctx.strokeStyle='rgba(255,255,255,.06)'; ctx.lineWidth=1;
-  var grid=160, x0 = -((cam.x%grid)+grid)%grid; for(var gx=x0; gx<W; gx+=grid){ ctx.beginPath(); ctx.moveTo(gx,0); ctx.lineTo(gx,H); ctx.stroke(); }
-  var y0 = -((cam.y%grid)+grid)%grid; for(var gy=y0; gy<H; gy+=grid){ ctx.beginPath(); ctx.moveTo(0,gy); ctx.lineTo(W,gy); ctx.stroke(); }
-
-  // фрукты
-  for(var i=0;i<foods.length;i++){
-    var f=foods[i], sx=f.x-cam.x, sy=f.y-cam.y;
-    if (sx<-20||sy<-20||sx>W+20||sy>H+20) continue;
-    ctx.fillStyle=f.c.c; ctx.beginPath(); ctx.arc(sx,sy,f.r,0,Math.PI*2); ctx.fill();
-  }
-  // бомбы
-  for(i=0;i<bombs.length;i++){
-    var b=bombs[i], sx=b.x-cam.x, sy=b.y-cam.y;
-    if (sx<-20||sy<-20||sx>W+20||sy>H+20) continue;
-    ctx.fillStyle='#111'; ctx.beginPath(); ctx.arc(sx,sy,b.r,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle='#ff5252'; ctx.beginPath(); ctx.arc(sx,sy,3,0,Math.PI*2); ctx.fill();
-  }
-
-  // боты (фиолетовая палитра)
-  for(i=0;i<bots.length;i++) drawSnake(bots[i], '#9b8cff');
-
-  // игрок (радужный) + имя
-  drawPlayerSnake(worm);
-
-  // HUD
-  ctx.fillStyle='rgba(255,255,255,.85)'; ctx.font='12px system-ui'; ctx.textAlign='left';
-  if (boostHold) ctx.fillText('BOOST', 12, 16);
-  if (invis)     ctx.fillText('INVIS '+Math.ceil(invisTimer)+'s', 12, 32);
-}
-function drawSnake(snk, bodyColor){
-  var W=canvas.clientWidth,H=canvas.clientHeight;
-  for(var s=0;s<snk.segs;s++){
-    var p=snk.trail[s*snk.step]||snk, sx=p.x-cam.x, sy=p.y-cam.y;
-    if (sx<-30||sy<-30||sx>W+30||sy>H+30) continue;
-    var r=Math.max(3.2, 9.5 - s*0.08);
-    ctx.beginPath(); ctx.fillStyle=bodyColor; ctx.arc(sx,sy,r,0,Math.PI*2); ctx.fill();
-  }
-  ctx.fillStyle='rgba(255,255,255,.9)'; ctx.font='11px system-ui'; ctx.textAlign='center';
-  ctx.fillText(snk.name, snk.x-cam.x, snk.y-cam.y - 16);
-}
-function drawPlayerSnake(snk){
-  var W=canvas.clientWidth,H=canvas.clientHeight;
-  for(var s=0;s<snk.segs;s++){
-    var p=snk.trail[s*snk.step]||snk, sx=p.x-cam.x, sy=p.y-cam.y;
-    if (sx<-30||sy<-30||sx>W+30||sy>H+30) continue;
-    var r=Math.max(3.2, 9.8 - s*0.09); // чем больше segs, тем массивнее выглядит змейка
-    var hue=(s*14+(Date.now()/40)%360)%360;
-    ctx.fillStyle='hsl('+hue+' 90% 55%)';
-    ctx.beginPath(); ctx.arc(sx,sy,r,0,Math.PI*2); ctx.fill();
-  }
-  ctx.fillStyle='rgba(255,255,255,.95)'; ctx.font='12px system-ui'; ctx.textAlign='center';
-  ctx.fillText(snk.name, snk.x-cam.x, snk.y-cam.y - 18);
-}
-
-/* съесть бота: насыпать еду, убрать бота, вырастить игрока на 80% его длины */
-function absorbBot(botIndex){
-  var b = bots[botIndex];
-  if (!b) return;
-
-  // 1) Еда по его следу
-  var step = 6;
-  for (var i = 0; i < b.trail.length; i += step) {
-    var p = b.trail[i];
-    foods.push({
-      x: p.x, y: p.y,
-      r: 4,
-      c: FRUITS[(Math.random() * FRUITS.length) | 0]
-    });
-  }
-
-  // 2) Удаляем бота
-  bots.splice(botIndex, 1);
-
-  // 3) Рост игрока: +80% от длины бота
-  var botLength = b.segs || 16;
-  var gain = Math.max(1, Math.floor(botLength * 0.8));
-  worm.segs += gain;
-  if (worm.segs > 220) worm.segs = 220; // ограничение, чтобы не лагало
-}
-
-/* ======== БУСТЫ И РЕКЛАМКА ======== */
-boostBtn.addEventListener('pointerdown',function(e){e.preventDefault();if(mode==='worm')boostHold=true;},{passive:false});
-['pointerup','pointercancel','touchend'].forEach(function(ev){ boostBtn.addEventListener(ev,function(){boostHold=false;}); });
-invisBtn.onclick=function(){
-  if (mode!=='worm') return;
-  if (!invis){
-    if (invCount>0){ invCount--; LS.set('invCount',invCount); invis=true; invisTimer=10; }
-    else if (bank>=200){ if (confirm('Купить «Невидимка» за 200 очков?')){ bank-=200; LS.set('bank',bank); invis=true; invisTimer=10; } }
-    else alert('Недостаточно очков');
-  }
-};
-function triggerAdAndRestart(){
-  saveRecord(playerName, score); LS.set('bank', bank);
-  adVideo.src='ad.mp4'; show(adWrap);
-  function finish(){ adVideo.pause(); hide(adWrap); startWorm(0); } // перезапуск без изменения настроек ботов, если нужно — поменяй
-  adVideo.onended=finish; skipAd.onclick=finish;
-}
-
-/* ======== CAT (без Jump-кнопки) ======== */
-var CAT_G=1400, CAT_BOUNCE=-800, CAT_SPEED=240, CAT_GAP_MIN=140, CAT_GAP_MAX=170;
-var cat=null, tramps=[], camY=0, airJump=true, minCamY=0; // jump не используется
-function startCat(){
-  mode='cat'; setScore(0); airJump=true; showControls('cat');
-  var W=canvas.clientWidth,H=canvas.clientHeight;
-  cat={x:W/2,y:H*0.6,vx:0,vy:0,onGround:false};
-  camY = cat.y - H*0.35; minCamY = camY; tramps=[];
-  for (var i=0;i<14;i++) addTrampCat(i===0? (cat.y+40) : null);
-}
-function addTrampCat(constY){
-  var W=canvas.clientWidth;
-  var gap = CAT_GAP_MIN + Math.random()*(CAT_GAP_MAX-CAT_GAP_MIN);
-  var newY = (typeof constY==='number') ? constY : (tramps.length ? tramps[tramps.length-1].y - gap : camY + 200);
-  var x = 60 + Math.random()*(W-120);
-  tramps.push({x:x, y:newY, w:Math.max(120, Math.min(220, W*0.3)), h:18});
-}
-function updateCat(dt){
-  var W=canvas.clientWidth,H=canvas.clientHeight;
-  var move = joy.active ? joy.ax : 0; cat.vx = move * CAT_SPEED;
-  cat.vy += CAT_G * dt; cat.x += cat.vx*dt; cat.y += cat.vy*dt;
-  cat.x = Math.max(16, Math.min(W-16, cat.x));
-  cat.onGround=false;
-  for (var i=0;i<tramps.length;i++){ var t=tramps[i];
-    if (cat.vy>0 && cat.y+12>=t.y && cat.y+12<=t.y+t.h+3 && cat.x>t.x && cat.x<t.x+t.w){
-      cat.y=t.y-12; cat.vy=CAT_BOUNCE; cat.onGround=true; airJump=true; setScore(score+1);
-    }
-  }
-  var desired=cat.y - H*0.35; if (desired < minCamY) minCamY = desired;
-  if (minCamY < camY){ camY += (minCamY - camY)*Math.min(1,dt*6); if (Math.abs(minCamY-camY)<0.5) camY=minCamY; }
-  var topY = tramps.length ? tramps[0].y : camY + 200;
-  for (i=1;i<tramps.length;i++) if (tramps[i].y < topY) topY = tramps[i].y;
-  while (topY > camY - H*0.8 && tramps.length < 60){
-    addTrampCat(topY - (CAT_GAP_MIN + Math.random()*(CAT_GAP_MAX-CAT_GAP_MIN)));
-    topY = tramps[0].y; for (i=1;i<tramps.length;i++) if (tramps[i].y < topY) topY = tramps[i].y;
-  }
-  for (i=tramps.length-1;i>=0;i--) if (tramps[i].y > camY + H + 200) tramps.splice(i,1);
-  if (cat.y > camY + H + 240) showMain();
-}
-function drawCat(){
-  var W=canvas.clientWidth,H=canvas.clientHeight;
-  ctx.fillStyle='#0a0e19'; ctx.fillRect(0,0,W,H);
-  ctx.fillStyle='#80ffd8'; ctx.strokeStyle='rgba(0,0,0,.25)'; ctx.lineWidth=1;
-  for (var i=0;i<tramps.length;i++){ var t=tramps[i]; roundRect(t.x, t.y - camY, t.w, t.h, 10); ctx.fill(); ctx.stroke(); }
-  drawCatSprite(cat.x, cat.y - camY);
-}
-function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
-function drawCatSprite(x,y){
-  ctx.save(); ctx.translate(x,y);
-  ctx.fillStyle='rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(0,16,14,6,0,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle='#f59e0b'; roundRect(-12,-6,24,26,8); ctx.fill();
-  ctx.beginPath(); ctx.fillStyle='#fca5a5'; ctx.arc(0,-16,11,0,Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.moveTo(-8,-20); ctx.lineTo(-3,-28); ctx.lineTo(2,-20); ctx.closePath(); ctx.fill();
-  ctx.beginPath(); ctx.moveTo(8,-20);  ctx.lineTo(3,-28);  ctx.lineTo(-2,-20); ctx.closePath(); ctx.fill();
-  ctx.fillStyle='#111'; ctx.beginPath(); ctx.arc(-3.5,-17,2,0,Math.PI*2); ctx.arc(3.5,-17,2,0,Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.strokeStyle='rgba(173,216,230,.9)'; ctx.lineWidth=3; ctx.arc(0,-16,14,0,Math.PI*2); ctx.stroke();
-  ctx.restore();
-}
-
-/* ======== ОБЩИЕ КНОПКИ/КОНТРОЛЫ ======== */
-function showControls(m){
-  boostBtn.style.display = (m==='worm')?'inline-block':'none';
-  invisBtn.style.display = (m==='worm')?'inline-block':'none';
-}
-
-/* ======== МЕХАНИКА/МАТЕМАТИКА ======== */
-function dist(ax,ay,bx,by){var dx=ax-bx, dy=ay-by; return Math.sqrt(dx*dx+dy*dy);}
-function getNearest(arr,x,y){ var best=null, bd=1e9; for(var i=0;i<arr.length;i++){ var d=dist(x,y,arr[i].x,arr[i].y); if(d<bd){bd=d;best=arr[i];}} return best; }
-function wrapAngle(a){ while(a>Math.PI)a-=2*Math.PI; while(a<-Math.PI)a+=2*Math.PI; return a; }
-function mixAngle(a,b,t){ var da = wrapAngle(b-a); return a + da*t; }
-
-/* ======== ГЛАВНЫЙ ЦИКЛ ======== */
-var last=Date.now(), paused=false;
-function loop(){
-  var now=Date.now(), dt=Math.min(33, now-last)/1000; last=now;
-  if (!paused){
-    if (mode==='worm'){ updateWorm(dt); drawWorm(); }
-    else if (mode==='cat'){ updateCat(dt); drawCat(); }
-    else { ctx.fillStyle='#070c18'; ctx.fillRect(0,0,canvas.clientWidth,canvas.clientHeight); }
-  }
-  requestAnimationFrame(loop);
-}
-requestAnimationFrame(loop);
-document.addEventListener('visibilitychange', function(){ paused=document.hidden; });
-
-/* ======== СТАРТ ======== */
-function init(){
-  updateBankUI();
-  showMain();
-}
-init();
-</script>
+  <!-- Подключение логики меню -->
+  <script src="./script.js"></script>
+  <!-- Подключение самой игры -->
+  <script src="./game.js"></script>
 </body>
 </html>
