@@ -23,6 +23,7 @@ window.updateUIScore = function(score){
 // события для игры
 btnWorm?.addEventListener('click', ()=>{
   vibe();
+  // событие для game.v3.js
   document.dispatchEvent(new Event('ui:start-worm'));
 });
 
@@ -51,4 +52,4 @@ btnRecs?.addEventListener('click', ()=>{
   alert("Рекорды ещё не добавлены 🏆");
 });
 
-console.log("script.js подключён: кнопки активны");
+console.log("✅ script.js подключён: кнопки активны");
