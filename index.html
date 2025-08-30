@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-<title>Cosmo Arcade — Safe ES5</title>
+<title>Cosmo Arcade — Safe ES5 (menu fix)</title>
 <style>
   html,body{margin:0;height:100%;background:#0a1020;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;-webkit-user-select:none;user-select:none;touch-action:none}
   #wrap{display:flex;flex-direction:column;height:100dvh}
@@ -66,7 +66,6 @@
 /* ---- БЕЗОПАСНЫЙ СТАРТ ---- */
 (function(){
   try{
-    // отключим старые SW (если были), чтобы не кэшировало
     if ('serviceWorker' in navigator && navigator.serviceWorker.getRegistrations) {
       navigator.serviceWorker.getRegistrations().then(function(rs){ rs.forEach(function(r){ r.unregister(); }); });
     }
@@ -215,15 +214,16 @@ function addTramp(constY){
   tramps.push({x:x, y:newY, w:Math.max(120, Math.min(220, W*0.3)), h:18});
 }
 
-/* прыжок — ловим везде (кнопка и любой тап) */
+/* ВАЖНО: обработчики прыжка — ТОЛЬКО когда state==='cat' */
+/* иначе блокировали клики по меню на iOS */
 function requestJump(){ if (state==='cat') jumpRequest = true; }
 ['pointerdown','mousedown'].forEach(function(evt){
-  canvas.addEventListener(evt, function(){ requestJump(); }, {passive:false});
-  document.body.addEventListener(evt, function(){ requestJump(); }, {passive:false});
+  canvas.addEventListener(evt, function(){ if(state==='cat'){ requestJump(); } }, {passive:false});
+  document.body.addEventListener(evt, function(){ /* не трогаем меню */ if(state==='cat'){ requestJump(); } }, {passive:false});
 });
 ['touchstart'].forEach(function(evt){
-  canvas.addEventListener(evt, function(e){ e.preventDefault(); requestJump(); }, {passive:false});
-  document.body.addEventListener(evt, function(e){ e.preventDefault(); requestJump(); }, {passive:false});
+  canvas.addEventListener(evt, function(e){ if(state==='cat'){ e.preventDefault(); requestJump(); } }, {passive:false});
+  document.body.addEventListener(evt, function(e){ if(state==='cat'){ e.preventDefault(); requestJump(); } }, {passive:false});
 });
 jumpBtn.addEventListener('pointerdown', function(e){ e.preventDefault(); requestJump(); }, {passive:false});
 jumpBtn.addEventListener('touchstart',  function(e){ e.preventDefault(); requestJump(); }, {passive:false});
@@ -281,12 +281,12 @@ function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w
 function drawCatSprite(x,y){
   ctx.save(); ctx.translate(x,y);
   ctx.fillStyle='rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(0,16,14,6,0,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle='#f59e0b'; roundRect(-12,-6,24,26,8); ctx.fill();             /* тело */
-  ctx.beginPath(); ctx.fillStyle='#fca5a5'; ctx.arc(0,-16,11,0,Math.PI*2); ctx.fill(); /* голова */
-  ctx.beginPath(); ctx.moveTo(-8,-20); ctx.lineTo(-3,-28); ctx.lineTo(2,-20); ctx.closePath(); ctx.fill(); /* ухо */
-  ctx.beginPath(); ctx.moveTo(8,-20);  ctx.lineTo(3,-28);  ctx.lineTo(-2,-20); ctx.closePath(); ctx.fill();/* ухо */
-  ctx.fillStyle='#111'; ctx.beginPath(); ctx.arc(-3.5,-17,2,0,Math.PI*2); ctx.arc(3.5,-17,2,0,Math.PI*2); ctx.fill(); /* глаза */
-  ctx.beginPath(); ctx.strokeStyle='rgba(173,216,230,.9)'; ctx.lineWidth=3; ctx.arc(0,-16,14,0,Math.PI*2); ctx.stroke(); /* шлем */
+  ctx.fillStyle='#f59e0b'; roundRect(-12,-6,24,26,8); ctx.fill();
+  ctx.beginPath(); ctx.fillStyle='#fca5a5'; ctx.arc(0,-16,11,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(-8,-20); ctx.lineTo(-3,-28); ctx.lineTo(2,-20); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(8,-20);  ctx.lineTo(3,-28);  ctx.lineTo(-2,-20); ctx.closePath(); ctx.fill();
+  ctx.fillStyle='#111'; ctx.beginPath(); ctx.arc(-3.5,-17,2,0,Math.PI*2); ctx.arc(3.5,-17,2,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.strokeStyle='rgba(173,216,230,.9)'; ctx.lineWidth=3; ctx.arc(0,-16,14,0,Math.PI*2); ctx.stroke();
   ctx.restore();
 }
 
