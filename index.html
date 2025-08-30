@@ -9,7 +9,7 @@
 html,body{height:100%}
 body{background:#0b1020;color:#fff;font-family:system-ui,Arial;overflow:hidden}
 
-/* ====== TOP (только в меню) ====== */
+/* ======= top (только в меню) ======= */
 .top{position:fixed;left:0;right:0;top:0;display:flex;gap:8px;align-items:center;justify-content:space-between;padding:10px 12px;background:#0006;border-bottom:1px solid #ffffff18;backdrop-filter:blur(6px);z-index:5}
 .brand{font-weight:800}
 .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
@@ -18,7 +18,7 @@ body{background:#0b1020;color:#fff;font-family:system-ui,Arial;overflow:hidden}
 .chip{font-weight:700}
 .playing .top{display:none}
 
-/* ====== MENU ====== */
+/* ======= menu ======= */
 .main{position:fixed;inset:56px 0 0 0;display:flex;align-items:center;justify-content:center}
 .menu{display:grid;gap:12px;max-width:860px;width:92%}
 .cards{display:grid;gap:12px;grid-template-columns:repeat(2,minmax(260px,1fr))}
@@ -26,30 +26,31 @@ body{background:#0b1020;color:#fff;font-family:system-ui,Arial;overflow:hidden}
 .card{border:1px solid #ffffff22;border-radius:12px;padding:14px;background:radial-gradient(140% 120% at 20% 0%,#182044 0%,transparent 60%),#0f1630;box-shadow:0 10px 30px #0007}
 .card h3{margin-bottom:6px;font-weight:800}
 
-/* ====== GAME HUD ====== */
+/* ======= game HUD ======= */
 .gamebar{position:fixed;left:0;right:0;top:0;display:none;align-items:center;justify-content:space-between;padding:8px 10px;z-index:6}
 .playing .gamebar{display:flex}
 .gamebar .chip{border-color:#ffffff2e;background:#0008}
 #score{font-weight:800}
 #pauseBtn{padding:8px 12px;border-radius:8px;border:1px solid #ffffff28;background:#0008;color:#fff}
 
-/* minimap */
 .minimap{position:fixed;right:10px;top:10px;width:110px;height:110px;border-radius:999px;border:1px solid #27c8ff66;background:#071423b8;backdrop-filter:blur(6px);z-index:6}
 #mini{width:100%;height:100%;border-radius:999px}
 
-/* невидимые зоны управления (worm): */
+/* невидимые зоны управления */
 .hud{position:fixed;inset:0;pointer-events:auto;display:none;z-index:5}
 .playing .hud{display:block}
 #boostArea{position:absolute;left:12px;bottom:12px;width:120px;height:120px;border-radius:999px;touch-action:none;opacity:0}
 #aimArea{position:absolute;right:0;top:0;bottom:0;width:55vw;touch-action:none;opacity:0}
 
-/* MODAL (пауза/рестарт) */
+/* modal (пауза) */
 .modal{position:fixed;inset:0;background:#0008;backdrop-filter:blur(8px);display:none;z-index:10;align-items:center;justify-content:center;padding:16px}
 .modal.show{display:flex}
 .box{width:min(420px,92vw);background:#0e152d;border:1px solid #ffffff26;border-radius:12px}
 .box h3{margin:0;padding:12px;border-bottom:1px solid #ffffff20}
 .box .body{padding:12px}
 .box .row{gap:8px}
+
+/* footer */
 .footer{position:fixed;left:0;right:0;bottom:0;text-align:center;color:#9aa1b6;font-size:12px;padding:6px 0;border-top:1px solid #ffffff18;background:#0006}
 .playing .footer{display:none}
 </style>
@@ -72,30 +73,30 @@ body{background:#0b1020;color:#fff;font-family:system-ui,Arial;overflow:hidden}
     <div class="cards">
       <div class="card">
         <h3>🐍 Worm</h3>
-        <p>Полосатое тело, свечение; толщина растёт от «мяса»; правый невидимый джойстик, слева круг — буст; миникарта; жевание; вибро при смерти.</p>
+        <p>Полосатое тело, свечение; рост в толщину и длину от «мяса». Если враг врезается в ТВОЁ тело — он погибает, ты ешь и светишься зелёным.</p>
         <button id="playWorm" class="btn">Играть</button>
       </div>
       <div class="card">
         <h3>🐱 Super Cat</h3>
-        <p>Мягкий рендер, улыбка, хвост виляет; 3 жизни; каждые 1000 очков — сердечко 🩷; пауза/рестарт.</p>
+        <p>Более реалистичный 2D кот: мягкая мордочка, усы, хвост виляет. Пауза/рестарт/выход.</p>
         <button id="playCat" class="btn">Играть</button>
       </div>
     </div>
   </div>
 </main>
 
-<!-- HUD для игры -->
+<!-- HUD -->
 <div class="gamebar">
   <div class="chip">Счёт: <span id="score">0</span></div>
   <button id="pauseBtn">Пауза / Выход</button>
 </div>
-<div class="minimap hide-when-menu"><canvas id="mini"></canvas></div>
+<div class="minimap"><canvas id="mini"></canvas></div>
 <div id="hud" class="hud">
   <div id="boostArea"></div>
   <div id="aimArea"></div>
 </div>
 
-<!-- Пауза / Выход -->
+<!-- Пауза -->
 <div id="pauseModal" class="modal">
   <div class="box">
     <h3>Пауза</h3>
@@ -109,42 +110,40 @@ body{background:#0b1020;color:#fff;font-family:system-ui,Arial;overflow:hidden}
   </div>
 </div>
 
-<footer class="footer">smooth striped worm + minimap + lives for cat</footer>
+<footer class="footer">striped worm + attack-direction rules + realistic cat</footer>
 
 <script>
-/* ===== утилы + рекорды (локально) ===== */
+/* ========= утилы ========= */
 const $=s=>document.querySelector(s);
 const on=(e,t,f,o)=>e&&e.addEventListener(t,f,o);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const rand=(a,b)=>a+Math.random()*(b-a);
-const REC_W='rec_worm_v2', REC_C='rec_cat_v2';
-function pushRec(key,name,score,limit=10){const a=JSON.parse(localStorage.getItem(key)||'[]');a.push({name,score,ts:Date.now()});a.sort((x,y)=>y.score-x.score);localStorage.setItem(key,JSON.stringify(a.slice(0,limit)));}
 
-/* ===== общие элементы управления меню ===== */
+/* ========= меню ========= */
 on($('#toMenu'),'click',()=>{ stopWorm(false); stopCat(false); });
 on($('#pauseBtn'),'click',()=>{$('#pauseModal').classList.add('show'); cancelAnimationFrame(wRAF); cancelAnimationFrame(cRAF);});
-on($('#resume'),'click',()=>{ $('#pauseModal').classList.remove('show'); if(wRun) wRAF=requestAnimationFrame(wStep); if(cRun) cRAF=requestAnimationFrame(cStep);});
-on($('#exit'),'click',()=>{ $('#pauseModal').classList.remove('show'); stopWorm(false); stopCat(false);});
-on($('#restart'),'click',()=>{ $('#pauseModal').classList.remove('show'); if(wRun){ stopWorm(false); startWorm(); } if(cRun){ stopCat(false); startCat(); }});
+on($('#resume'),'click',()=>{$('#pauseModal').classList.remove('show'); if(wRun) wRAF=requestAnimationFrame(wStep); if(cRun) cRAF=requestAnimationFrame(cStep);});
+on($('#exit'),'click',()=>{$('#pauseModal').classList.remove('show'); stopWorm(false); stopCat(false);});
+on($('#restart'),'click',()=>{$('#pauseModal').classList.remove('show'); if(wRun){ stopWorm(false); startWorm(); } if(cRun){ stopCat(false); startCat(); }});
 
-/* =======================================================================
-   WORM — полосатое тело, жевание, вибро, миникарта, невидимые зоны
-   ======================================================================= */
+/* ======================================================================
+   WORM
+   ====================================================================== */
 let wCanvas=null,wCtx=null,wRAF=null,wRun=false,lastTs=0;
 const WCFG={WORLD:3600,SPEED:2.35,BOOST:1.55,TURN:0.12,SEG:8,FOOD_R:4,FOOD_TARGET:170};
 const PLANETS=["Марс","Земля","Юпитер","Венера","Сатурн","Нептун","Меркурий","Уран","Плутон","Европа","Ио","Титан","Ганимед","Каллисто","Тритон"];
 const COLORS=['#6bf2ff','#7eff6b','#ff6be6','#ffaa6b','#7aa3ff','#ffd86b'];
 const FOOD_TYPES=['dot','bomb','flower','rainbow','rad','mass'];
 const FOOD_PROB={dot:0.90,bomb:0.02,flower:0.03,rainbow:0.03,rad:0.02};
+const rndColor=()=>COLORS[Math.floor(Math.random()*COLORS.length)];
 const wTouch={on:false,sx:0,sy:0,ex:0,ey:0};
-let wSnakes=[],wFoods=[],wMe=null,wScore=0,wBoost=false, chewUntil=0;
+let wSnakes=[],wFoods=[],wMe=null,wScore=0,wBoost=false,chewUntil=0,eatGlowUntil=0;
 const wCam={x:0,y:0};
 const mini=$('#mini'), miniCtx=mini.getContext('2d');
 
 function wHead(s){return s.segs[0];}
 function wDist2(a,b){const dx=a.x-b.x,dy=a.y-b.y;return dx*dx+dy*dy;}
 function wLerpAng(a,b,t){let d=((b-a+Math.PI*3)%(Math.PI*2))-Math.PI;return a+d*t;}
-const rndColor=()=>COLORS[Math.floor(Math.random()*COLORS.length)];
 
 function wNewSnake(x,y,isP=false,name='bot',color='#6bf2ff'){
   const dir=Math.random()*Math.PI*2;
@@ -157,30 +156,30 @@ function wNewSnake(x,y,isP=false,name='bot',color='#6bf2ff'){
 function wSpawn(){
   document.body.classList.add('playing'); $('#hud').style.display='block';
   $('.gamebar').style.display='flex'; $('.minimap').style.display='block';
-  wSnakes=[]; wFoods=[];
+  wSnakes=[]; wFoods=[]; wScore=0; $('#score').textContent=0;
   const meName=($('#playerName').value||'Kosmos').slice(0,16);
   wMe=wNewSnake(rand(1000,1400),rand(1000,1400),true,meName,'#6bf2ff'); wSnakes.push(wMe);
   while(wSnakes.filter(s=>!s.isP).length<clamp(parseInt($('#botCount').value||12,10),0,40)){
     wSnakes.push(wNewSnake(rand(200,WCFG.WORLD-200),rand(200,WCFG.WORLD-200),false,PLANETS[Math.floor(Math.random()*PLANETS.length)], rndColor()));
   }
   for(let i=0;i<140;i++) wFoods.push(wMakeFood());
-  wScore=0; $('#score').textContent=0;
 }
-function wMakeFood(){
-  const r=Math.random(); let type='dot',acc=0; for(const t of FOOD_TYPES){acc+=FOOD_PROB[t]; if(r<=acc){type=t;break;}}
-  return {x:rand(40,WCFG.WORLD-40),y:rand(40,WCFG.WORLD-40),type,sz:1};
-}
+
+function wMakeFood(){const r=Math.random();let type='dot',acc=0;for(const t of FOOD_TYPES){acc+=FOOD_PROB[t];if(r<=acc){type=t;break;}}return {x:rand(40,WCFG.WORLD-40),y:rand(40,WCFG.WORLD-40),type,sz:1};}
 function wEnsureFood(){ while(wFoods.length<WCFG.FOOD_TARGET) wFoods.push(wMakeFood()); }
-
 function wResize(){ wCanvas.width=innerWidth; wCanvas.height=innerHeight; mini.width=mini.clientWidth; mini.height=mini.clientHeight;}
-function wCamUpdate(){ const h=wHead(wMe); wCam.x=clamp(h.x-wCanvas.width/2,0,WCFG.WORLD-wCanvas.width); wCam.y=clamp(h.y-wCanvas.height/2,0,WCFG.WORLD-wCanvas.height);}
-
+function wCamUpdate(){ const h=wHead(wMe); wCam.x=Math.max(0,Math.min(WCFG.WORLD-wCanvas.width, h.x-wCanvas.width/2)); wCam.y=Math.max(0,Math.min(WCFG.WORLD-wCanvas.height, h.y-wCanvas.height/2));}
 function dropMeat(s){ for(let i=0;i<s.segs.length;i+=2){ const p=s.segs[i]; wFoods.push({x:p.x,y:p.y,type:'mass',sz:1}); } }
+
+let protectMeHeadUntil=0; // (если захочешь иммунитет на время — можно использовать)
 
 function wUpdate(ts){
   if(!lastTs) lastTs=ts; const dt=Math.min(32,ts-lastTs); lastTs=ts;
+
+  // управление (только правая половина)
   if(wTouch.on){ const a=Math.atan2(wTouch.ey-wTouch.sy,wTouch.ex-wTouch.sx); if(isFinite(a)) wMe.dir=wLerpAng(wMe.dir,a,WCFG.TURN*(dt/16)*1.5); }
 
+  // движение и еда
   for(const s of wSnakes){
     if(!s.alive) continue;
     if(!s.isP){ s.dir=wLerpAng(s.dir,s.dir+rand(-0.3,0.3),0.05*(dt/16)); }
@@ -191,30 +190,53 @@ function wUpdate(ts){
     const nx=wHead(s).x+Math.cos(s.dir)*sp, ny=wHead(s).y+Math.sin(s.dir)*sp;
     s.segs.unshift({x:nx,y:ny}); if(s.grow>0)s.grow--; else if(s.segs.length>26)s.segs.pop();
 
+    // еда/бусты
     for(let i=wFoods.length-1;i>=0;i--){
       const f=wFoods[i], rr=(s.r+(f.type==='mass'?6:WCFG.FOOD_R)+4);
       if(wDist2(wHead(s),f)<rr*rr){
         wFoods.splice(i,1);
         if(f.type==='dot'){ s.grow+=5; if(s.isP){wScore++;$('#score').textContent=wScore;} }
-        else if(f.type==='bomb'){ s.alive=false; if(s.isP){ navigator.vibrate?.(200); return stopWorm(true);} }
+        else if(f.type==='bomb'){ s.alive=false; if(s.isP){ navigator.vibrate?.(180); return stopWorm(true);} }
         else if(f.type==='flower'){ s.fatUntil=now+15000; }
         else if(f.type==='rainbow'){ s.color=rndColor(); }
         else if(f.type==='rad'){ s.radUntil=now+10000; s.radShrink=0; }
-        else if(f.type==='mass'){ s.baseR=clamp(s.baseR+0.45*f.sz,5,32); s.grow+=Math.ceil(4*f.sz); if(s.isP){ wScore+=3*f.sz|0; $('#score').textContent=wScore; chewUntil=now+500; } }
+        else if(f.type==='mass'){ s.baseR=clamp(s.baseR+0.45*f.sz,5,32); s.grow+=Math.ceil(4*f.sz); if(s.isP){ wScore+=3*f.sz|0; $('#score').textContent=wScore; chewUntil=now+500; eatGlowUntil=now+800; } }
       }
     }
     const h=wHead(s); if(h.x<0)h.x+=WCFG.WORLD; if(h.x>WCFG.WORLD)h.x-=WCFG.WORLD; if(h.y<0)h.y+=WCFG.WORLD; if(h.y>WCFG.WORLD)h.y-=WCFG.WORLD;
   }
 
-  // столкновения
-  for(const a of wSnakes){
-    if(!a.alive) continue;
-    for(const b of wSnakes){ if(a===b||!b.alive) continue;
-      const R2=(a.r+b.r*0.85)**2, H=wHead(a);
-      for(const seg of b.segs){ if(wDist2(H,seg)<=R2){ a.alive=false; if(a.isP){ navigator.vibrate?.([80,50,120]); return stopWorm(true);} dropMeat(a); break; } }
+  // СТОЛКНОВЕНИЯ — «кто врезался головой, тот и виноват»
+  for(const attacker of wSnakes){
+    if(!attacker.alive) continue;
+    const H=attacker.segs[0];
+    for(const victim of wSnakes){
+      if(attacker===victim || !victim.alive) continue;
+      // проверяем столкновение головы attacker с ТЕЛОМ victim (голову victim пропускаем)
+      const R2=(attacker.r+victim.r*0.85)**2;
+      for(let k=2;k<victim.segs.length;k++){ // k>=2 — явно тело
+        const seg=victim.segs[k];
+        if(wDist2(H,seg)<=R2){
+          // если attacker — игрок -> погибает игрок
+          if(attacker.isP){
+            attacker.alive=false; navigator.vibrate?.([80,50,120]); return stopWorm(true);
+          }
+          // если victim — игрок -> атакующий бот погибает, игрок ест и светится
+          if(victim.isP){
+            attacker.alive=false; dropMeat(attacker);
+            const now=performance.now(); eatGlowUntil=now+900; chewUntil=now+600;
+            wMe.baseR=clamp(wMe.baseR+0.6,5,32); wMe.grow+=8; wScore+=5; $('#score').textContent=wScore;
+            break;
+          }
+          // бот в бота — виноват атакующий
+          attacker.alive=false; dropMeat(attacker);
+          break;
+        }
+      }
     }
   }
-  wSnakes=wSnakes.filter(s=>s.alive); // реген ботов и еды
+
+  wSnakes=wSnakes.filter(s=>s.alive);
   while(wSnakes.filter(s=>!s.isP).length<clamp(parseInt($('#botCount').value||12,10),0,40)){
     wSnakes.push(wNewSnake(rand(200,WCFG.WORLD-200),rand(200,WCFG.WORLD-200),false,PLANETS[Math.floor(Math.random()*PLANETS.length)], rndColor()));
   }
@@ -222,53 +244,33 @@ function wUpdate(ts){
 }
 
 function drawStripedCircle(ctx,x,y,r,color){
-  // полосатый круг: радиальные полосы (двухцветные)
   const lg=ctx.createLinearGradient(x-r,y-r,x+r,y+r);
   lg.addColorStop(0,color); lg.addColorStop(.5,'#ffffff22'); lg.addColorStop(1,color);
   ctx.fillStyle=lg; ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
 }
 function drawSnake(s){
   const ctx=wCtx, now=performance.now();
-  // свечение подложка
-  ctx.save(); ctx.globalCompositeOperation='lighter'; ctx.shadowColor=(now<s.radUntil?'#8cff7a':s.color); ctx.shadowBlur=22;
+  // свечение: обычное, а у игрока при поедании — зелёное
+  ctx.save(); ctx.globalCompositeOperation='lighter';
+  const glow = (s.isP && now<eatGlowUntil) ? '#6eff7a' : (now<s.radUntil? '#8cff7a' : s.color);
+  ctx.shadowColor=glow; ctx.shadowBlur=22;
   for(let i=0;i<s.segs.length;i+=2){ const p=s.segs[i]; ctx.beginPath(); ctx.arc(p.x,p.y,s.r,0,Math.PI*2); ctx.fillStyle=s.color; ctx.fill(); }
   ctx.restore();
-  // тело: полосатые кружки
+  // тело
   for(let i=0;i<s.segs.length;i++){ const p=s.segs[i]; drawStripedCircle(ctx,p.x,p.y,s.r,s.color); }
-  // голова: рот (жевание), глаза
+  // голова: рот (жевание), глаза смотрят по dir
   const h=wHead(s), dpx=Math.cos(s.dir), dpy=Math.sin(s.dir), nx=-dpy, ny=dpx, off=s.r*.62;
-  // рот
-  if(s.isP && now<chewUntil){
-    ctx.save(); ctx.translate(h.x,h.y); ctx.rotate(s.dir);
-    ctx.beginPath(); ctx.arc(0,0,s.r*0.85,Math.PI*0.15, -Math.PI*0.15,false); ctx.lineWidth=3; ctx.strokeStyle='#111'; ctx.stroke();
-    ctx.restore();
-  }
-  // белки
-  const eye=s.r*.46, pupil=eye*.45, ex=h.x+nx*off, ey=h.y+ny*off;
-  const ex2=h.x-nx*off, ey2=h.y-ny*off;
-  ctx.beginPath(); ctx.fillStyle='#fff'; ctx.arc(ex+dpx*.6,ey+dpy*.6,eye,0,Math.PI*2); ctx.arc(ex2+dpx*.6,ey2+dpy*.6,eye,0,Math.PI*2); ctx.fill();
-  // зрачки — фикс смотрят вперёд (по dir)
-  ctx.beginPath(); ctx.fillStyle='#111'; ctx.arc(ex+dpx*1.0,ey+dpy*1.0,pupil,0,Math.PI*2); ctx.arc(ex2+dpx*1.0,ey2+dpy*1.0,pupil,0,Math.PI*2); ctx.fill();
+  if(s.isP && now<chewUntil){ ctx.save(); ctx.translate(h.x,h.y); ctx.rotate(s.dir);
+    ctx.beginPath(); ctx.arc(0,0,s.r*0.85,Math.PI*0.15,-Math.PI*0.15,false); ctx.lineWidth=3; ctx.strokeStyle='#111'; ctx.stroke(); ctx.restore(); }
+  const eye=s.r*.46, pupil=eye*.45, ex=h.x+nx*off, ey=h.y+ny*off, ex2=h.x-nx*off, ey2=h.y-ny*off;
+  wCtx.beginPath(); wCtx.fillStyle='#fff';
+  wCtx.arc(ex+dpx*.6,ey+dpy*.6,eye,0,Math.PI*2); wCtx.arc(ex2+dpx*.6,ey2+dpy*.6,eye,0,Math.PI*2); wCtx.fill();
+  wCtx.beginPath(); wCtx.fillStyle='#111';
+  wCtx.arc(ex+dpx*1.0,ey+dpy*1.0,pupil,0,Math.PI*2); wCtx.arc(ex2+dpx*1.0,ey2+dpy*1.0,pupil,0,Math.PI*2); wCtx.fill();
   // ник
-  ctx.font='700 13px system-ui,Arial'; ctx.textAlign='center'; ctx.textBaseline='bottom'; ctx.fillStyle='#e7f7ff'; ctx.strokeStyle='#08121f'; ctx.lineWidth=2;
-  const nxp=Math.round(h.x)+0.5, nyp=Math.round(h.y-s.r*1.7)+0.5; ctx.strokeText(s.name,nxp,nyp); ctx.fillText(s.name,nxp,nyp);
-}
-
-function wDraw(){
-  const ctx=wCtx; ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0,0,wCanvas.width,wCanvas.height);
-  ctx.translate(-wCam.x,-wCam.y);
-  // фон
-  ctx.fillStyle='#06101a'; ctx.fillRect(wCam.x,wCam.y,wCanvas.width,wCanvas.height);
-  // еда
-  for(const f of wFoods){
-    if(f.type==='dot'){ ctx.beginPath(); ctx.arc(f.x,f.y,WCFG.FOOD_R,0,Math.PI*2); ctx.fillStyle='#00ffd5'; ctx.shadowBlur=12; ctx.shadowColor='#00ffd5'; ctx.fill(); ctx.shadowBlur=0; }
-    else if(f.type==='mass'){ ctx.beginPath(); ctx.arc(f.x,f.y,6,0,Math.PI*2); ctx.fillStyle='#ffd36b'; ctx.shadowBlur=14; ctx.shadowColor='#ffd36b'; ctx.fill(); ctx.shadowBlur=0; }
-    else { ctx.save(); ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.font='20px "Apple Color Emoji","Segoe UI Emoji",system-ui'; const map={bomb:'💣',flower:'🏵️',rainbow:'🌈',rad:'☢️'}; ctx.fillText(map[f.type]||'❓',f.x,f.y+1); ctx.restore(); }
-  }
-  // змеи
-  for(const s of wSnakes) drawSnake(s);
-  // миникарта
-  drawMinimap();
+  wCtx.font='700 13px system-ui,Arial'; wCtx.textAlign='center'; wCtx.textBaseline='bottom';
+  wCtx.fillStyle='#e7f7ff'; wCtx.strokeStyle='#08121f'; wCtx.lineWidth=2;
+  const nxp=Math.round(h.x)+0.5, nyp=Math.round(h.y-s.r*1.7)+0.5; wCtx.strokeText(s.name,nxp,nyp); wCtx.fillText(s.name,nxp,nyp);
 }
 
 function drawMinimap(){
@@ -276,94 +278,106 @@ function drawMinimap(){
   ctx.clearRect(0,0,mini.width,mini.height);
   ctx.save(); ctx.translate(r,r);
   ctx.beginPath(); ctx.arc(0,0,r-1,0,Math.PI*2); ctx.clip(); ctx.fillStyle='#0b1a2c'; ctx.fillRect(-r,-r,mini.width,mini.height);
-  // бусты
+  for(const f of wFoods){ if(f.type==='dot') continue; const x=(f.x-WCFG.WORLD/2)*scale, y=(f.y-WCFG.WORLD/2)*scale; ctx.fillStyle='#57e1ff'; ctx.fillRect(x-1,y-1,2,2); }
+  const hx=(wHead(wMe).x-WCFG.WORLD/2)*scale, hy=(wHead(wMe).y-WCFG.WORLD/2)*scale; ctx.beginPath(); ctx.arc(hx,hy,3,0,Math.PI*2); ctx.fillStyle='#39f3ff'; ctx.fill(); ctx.restore();
+}
+
+function wDraw(){
+  const ctx=wCtx; ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0,0,wCanvas.width,wCanvas.height);
+  ctx.translate(-wCam.x,-wCam.y);
+  ctx.fillStyle='#06101a'; ctx.fillRect(wCam.x,wCam.y,wCanvas.width,wCanvas.height);
   for(const f of wFoods){
-    if(f.type==='dot') continue;
-    const x=(f.x-WCFG.WORLD/2)*scale, y=(f.y-WCFG.WORLD/2)*scale;
-    ctx.fillStyle='#57e1ff'; ctx.fillRect(x-1,y-1,2,2);
+    if(f.type==='dot'){ ctx.beginPath(); ctx.arc(f.x,f.y,WCFG.FOOD_R,0,Math.PI*2); ctx.fillStyle='#00ffd5'; ctx.shadowBlur=12; ctx.shadowColor='#00ffd5'; ctx.fill(); ctx.shadowBlur=0; }
+    else if(f.type==='mass'){ ctx.beginPath(); ctx.arc(f.x,f.y,6,0,Math.PI*2); ctx.fillStyle='#ffd36b'; ctx.shadowBlur=14; ctx.shadowColor='#ffd36b'; ctx.fill(); ctx.shadowBlur=0; }
+    else { ctx.save(); ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.font='20px "Apple Color Emoji","Segoe UI Emoji",system-ui'; const map={bomb:'💣',flower:'🏵️',rainbow:'🌈',rad:'☢️'}; ctx.fillText(map[f.type]||'❓',f.x,f.y+1); ctx.restore(); }
   }
-  // игрок
-  const hx=(wHead(wMe).x-WCFG.WORLD/2)*scale, hy=(wHead(wMe).y-WCFG.WORLD/2)*scale;
-  ctx.beginPath(); ctx.arc(hx,hy,3,0,Math.PI*2); ctx.fillStyle='#39f3ff'; ctx.fill();
-  ctx.restore();
+  for(const s of wSnakes) drawSnake(s);
+  drawMinimap();
 }
 
 function wStep(ts){ if(!wRun) return; wUpdate(ts); wCamUpdate(); wDraw(); wRAF=requestAnimationFrame(wStep); }
-
 function startWorm(){
   if(wRun) return;
   wCanvas=document.createElement('canvas'); wCanvas.style.position='fixed'; wCanvas.style.inset='0'; wCanvas.style.zIndex='3'; wCanvas.style.touchAction='none';
   document.body.appendChild(wCanvas); wCtx=wCanvas.getContext('2d'); wRun=true; wResize(); addEventListener('resize',wResize);
-  wSpawn(); lastTs=0; wRAF=requestAnimationFrame(wStep);
+  startAim(); startBoost(); wSpawn(); lastTs=0; wRAF=requestAnimationFrame(wStep);
 }
 function stopWorm(save=false){
   if(!wRun) return;
-  if(save&&wMe) pushRec(REC_W,wMe.name,wScore);
+  if(save&&wMe){ const n=($('#playerName').value||'Kosmos').slice(0,16); const a=JSON.parse(localStorage.getItem('rec_worm_v2')||'[]'); a.push({name:n,score:wScore,ts:Date.now()}); a.sort((x,y)=>y.score-x.score); localStorage.setItem('rec_worm_v2',JSON.stringify(a.slice(0,10))); }
   wRun=false; cancelAnimationFrame(wRAF); removeEventListener('resize',wResize);
   wCanvas?.remove(); document.body.classList.remove('playing'); $('#hud').style.display='none'; $('.gamebar').style.display='none'; $('.minimap').style.display='none';
 }
 
-/* управление: правый aim + левый boost */
-const aim=$('#aimArea'), boost=$('#boostArea'); let aimId=null, boostId=null;
-function aimStart(e){const t=e.changedTouches?e.changedTouches[0]:e; if(t.clientX<innerWidth*0.45)return; aimId=t.identifier??'mouse'; wTouch.on=true; wTouch.sx=wTouch.ex=t.clientX; wTouch.sy=wTouch.ey=t.clientY; e.preventDefault?.();}
-function aimMove(e){for(const t of (e.changedTouches||[e])){const id=t.identifier??'mouse'; if(id!==aimId)continue; wTouch.ex=t.clientX; wTouch.ey=t.clientY;}}
-function aimEnd(e){for(const t of (e.changedTouches||[e])){const id=t.identifier??'mouse'; if(id===aimId){wTouch.on=false; aimId=null;}}}
-function boostStart(e){const t=e.changedTouches?e.changedTouches[0]:e; boostId=t.identifier??'mouse'; wBoost=true; e.preventDefault?.();}
-function boostEnd(e){for(const t of (e.changedTouches||[e])){const id=t.identifier??'mouse'; if(id===boostId){wBoost=false; boostId=null;}}}
-on(aim,'touchstart',aimStart,{passive:false}); on(aim,'touchmove',aimMove,{passive:true}); on(aim,'touchend',aimEnd,{passive:true});
-on(aim,'mousedown',aimStart); on(aim,'mousemove',aimMove); on(aim,'mouseup',aimEnd);
-on(boost,'touchstart',boostStart,{passive:false}); on(boost,'touchend',boostEnd,{passive:true});
-on(boost,'mousedown',boostStart); on(boost,'mouseup',boostEnd);
+/* управление (правый aim + левый boost) */
+const aimEl=$('#aimArea'), boostEl=$('#boostArea'); let aimId=null, boostId=null;
+function aimStart(e){const t=e.changedTouches?e.changedTouches[0]:e;if(t.clientX<innerWidth*0.45)return;aimId=t.identifier??'mouse';wTouch.on=true;wTouch.sx=wTouch.ex=t.clientX;wTouch.sy=wTouch.ey=t.clientY;e.preventDefault?.();}
+function aimMove(e){for(const t of (e.changedTouches||[e])){const id=t.identifier??'mouse';if(id!==aimId)continue;wTouch.ex=t.clientX;wTouch.ey=t.clientY;}}
+function aimEnd(e){for(const t of (e.changedTouches||[e])){const id=t.identifier??'mouse';if(id===aimId){wTouch.on=false;aimId=null;}}}
+function boostStart(e){const t=e.changedTouches?e.changedTouches[0]:e;boostId=t.identifier??'mouse';wBoost=true;e.preventDefault?.();}
+function boostEnd(e){for(const t of (e.changedTouches||[e])){const id=t.identifier??'mouse';if(id===boostId){wBoost=false;boostId=null;}}}
+function startAim(){ on(aimEl,'touchstart',aimStart,{passive:false}); on(aimEl,'touchmove',aimMove,{passive:true}); on(aimEl,'touchend',aimEnd,{passive:true}); on(aimEl,'mousedown',aimStart); on(aimEl,'mousemove',aimMove); on(aimEl,'mouseup',aimEnd);}
+function startBoost(){ on(boostEl,'touchstart',boostStart,{passive:false}); on(boostEl,'touchend',boostEnd,{passive:true}); on(boostEl,'mousedown',boostStart); on(boostEl,'mouseup',boostEnd);}
 
 on($('#playWorm'),'click',startWorm);
 
-/* =======================================================================
-   SUPER CAT — мягче, улыбка, хвост, 3 жизни, сердечко каждые 1000
-   ======================================================================= */
+/* ======================================================================
+   SUPER CAT — более реалистичный 2D
+   ====================================================================== */
 let cCanvas=null,cCtx=null,cRAF=null,cRun=false;
-const cat={x:0,y:0,vx:0,vy:-8,w:36,h:46,face:1,lives:3,nextHeart:1000};
+const cat={x:0,y:0,vx:0,vy:-8,w:40,h:52,face:1};
 const cJoy={on:false,sx:0,sy:0,ex:0,ey:0};
 let camY=0,cScore=0,plats=[];
 
-function cReset(){ plats=[]; cScore=0; camY=0; cat.x=innerWidth/2; cat.y=0; cat.vx=0; cat.vy=-8; cat.face=1; cat.lives=3; cat.nextHeart=1000;
+function cReset(){ plats=[]; cScore=0; camY=0; cat.x=innerWidth/2; cat.y=0; cat.vx=0; cat.vy=-8; cat.face=1;
   let y=0; for(let i=0;i<28;i++){ plats.push(cMake(rand(40,innerWidth-160), y, cType())); y-=rand(70,110); } }
 function cType(){ const r=Math.random(); if(r<0.2)return'move'; if(r<0.28)return'break'; return'solid'; }
 function cMake(x,y,type){ const w=type==='solid'?rand(80,150):rand(90,150); return {x,y,w,type,dir:Math.random()<.5?-1:1,life:1,off:Math.random()*1000}; }
 function cEnsure(){ let topY=plats.length?Math.min(...plats.map(p=>p.y)):0; while(topY>camY-1400){ topY-=rand(70,110); plats.push(cMake(rand(30,innerWidth-160),topY,cType())); } plats=plats.filter(p=>p.y<camY+innerHeight+200&&p.life>0); }
-
 function cJoySet(dx){ const ax=clamp(dx*0.06,-1,1); cat.vx=clamp(cat.vx+ax,-6,6); if(Math.abs(ax)>0.01) cat.face=ax>0?1:-1; }
 function cInput(){ if(cJoy.on){ cJoySet(cJoy.ex-cJoy.sx); } }
-function cLoseLife(){ cat.lives--; if(cat.lives<=0){ stopCat(true); } else { navigator.vibrate?.([40,80,40]); cat.vy=-12; } }
+
 function cPhys(){
   cat.vy+=0.35; cat.x+=cat.vx; cat.y+=cat.vy; cat.vx*=0.992;
   if(cat.x<-cat.w)cat.x=innerWidth+cat.w; if(cat.x>innerWidth+cat.w)cat.x=-cat.w;
-
   for(const p of plats){ if(p.type==='move'){ p.x+=p.dir*1.2*Math.sin((performance.now()+p.off)/800); p.x=clamp(p.x,10,innerWidth-p.w-10); } }
-
   if(cat.vy>0){ for(const p of plats){ if(cat.y+cat.h/2>p.y && cat.y+cat.h/2<p.y+14 && cat.x>p.x && cat.x<p.x+p.w){ if(p.type==='break'){p.life=0;} else {cat.vy=-10;} } } }
-  camY=Math.min(camY,cat.y-innerHeight*0.45); cScore=Math.max(cScore,Math.round(-(cat.y-0))); $('#score').textContent=`${cScore}  🩷${'❤'.repeat(cat.lives)}`;
-
-  // бонус жизнь каждые 1000
-  if(cScore>=cat.nextHeart){ cat.lives=Math.min(3,cat.lives+1); cat.nextHeart+=1000; navigator.vibrate?.(120); }
-  // падение вниз == потеря жизни
-  if(cat.y-camY>innerHeight+80) cLoseLife();
+  camY=Math.min(camY,cat.y-innerHeight*0.45);
+  cScore=Math.max(cScore,Math.round(-(cat.y-0)));
+  $('#score').textContent=cScore;
 }
 
 function cDrawCat(){
   const ctx=cCtx,x=cat.x,y=cat.y-camY,f=cat.face,w=cat.w,h=cat.h;
-  ctx.save(); ctx.filter='blur(0.2px)'; // мягче
-  // хвост
-  ctx.save(); ctx.translate(x - f*w*0.35, y + h*0.05); ctx.rotate(Math.sin(performance.now()/150)*0.25*f);
-  ctx.beginPath(); ctx.ellipse(0,0, w*0.28, h*0.18, 0, 0, Math.PI*2); ctx.fillStyle='#f7c38b'; ctx.fill(); ctx.restore();
-  // тело
-  if(ctx.roundRect) ctx.roundRect(x - w*0.35, y - h*0.4, w*0.7, h*0.8, 12); else ctx.rect(x - w*0.35, y - h*0.4, w*0.7, h*0.8);
-  ctx.fillStyle='#ffd9a8'; ctx.fill();
-  // голова (реальнее)
-  ctx.beginPath(); ctx.ellipse(x, y - h*0.55, w*0.46, h*0.34, 0, 0, Math.PI*2); ctx.fillStyle='#ffd9a8'; ctx.fill();
-  // улыбка
-  ctx.beginPath(); ctx.arc(x, y-h*0.48, 8, 0.15*Math.PI, 0.85*Math.PI); ctx.strokeStyle='#a85e5e'; ctx.lineWidth=2; ctx.stroke();
-  // глаза
-  ctx.beginPath(); ctx.fillStyle='#222'; ctx.arc(x- w*0.16, y-h*0.60, 3.6, 0, Math.PI*2); ctx.arc(x+w*0.16, y-h*0.60, 3.6, 0, Math.PI*2); ctx.fill();
+  ctx.save(); ctx.filter='blur(0.25px)'; // мягче
+
+  // хвост — плавное виляние
+  ctx.save(); ctx.translate(x - f*w*0.45, y + h*0.05); ctx.rotate(Math.sin(performance.now()/180)*0.35*f);
+  ctx.beginPath(); ctx.ellipse(0,0, w*0.35, h*0.18, 0, 0, Math.PI*2); ctx.fillStyle='#f6c492'; ctx.fill(); ctx.restore();
+
+  // тело (овальный туловище)
+  ctx.beginPath(); ctx.ellipse(x, y, w*0.45, h*0.5, 0, 0, Math.PI*2); ctx.fillStyle='#ffd9a8'; ctx.fill();
+
+  // голова (ближе к реалистичной)
+  ctx.beginPath(); ctx.ellipse(x, y - h*0.55, w*0.50, h*0.40, 0, 0, Math.PI*2); ctx.fillStyle='#ffd7a2'; ctx.fill();
+  // уши
+  ctx.beginPath(); ctx.moveTo(x - w*0.32, y - h*0.68); ctx.lineTo(x - w*0.18, y - h*0.95); ctx.lineTo(x - w*0.02, y - h*0.68); ctx.closePath(); ctx.fillStyle='#f0b98e'; ctx.fill();
+  ctx.beginPath(); ctx.moveTo(x + w*0.32, y - h*0.68); ctx.lineTo(x + w*0.18, y - h*0.95); ctx.lineTo(x + w*0.02, y - h*0.68); ctx.closePath(); ctx.fillStyle='#f0b98e'; ctx.fill();
+
+  // глаза с бликом
+  ctx.beginPath(); ctx.fillStyle='#222';
+  ctx.arc(x- w*0.16, y-h*0.60, 4.2, 0, Math.PI*2);
+  ctx.arc(x+ w*0.16, y-h*0.60, 4.2, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.fillStyle='#fff'; ctx.arc(x- w*0.14, y-h*0.62, 1.4, 0, Math.PI*2); ctx.arc(x+ w*0.14, y-h*0.62, 1.4, 0, Math.PI*2); ctx.fill();
+
+  // нос и улыбка
+  ctx.beginPath(); ctx.arc(x, y - h*0.50, 2.8, 0, Math.PI*2); ctx.fillStyle='#e27b7b'; ctx.fill();
+  ctx.beginPath(); ctx.arc(x, y-h*0.48, 9, 0.15*Math.PI, 0.85*Math.PI); ctx.strokeStyle='#a55a5a'; ctx.lineWidth=2; ctx.stroke();
+
+  // усы
+  ctx.strokeStyle='#a58a7a'; ctx.lineWidth=1.2;
+  for(const s of [-1,1]){ ctx.beginPath(); ctx.moveTo(x+s*w*0.10,y-h*0.52); ctx.lineTo(x+s*w*0.30,y-h*0.56); ctx.moveTo(x+s*w*0.10,y-h*0.50); ctx.lineTo(x+s*w*0.30,y-h*0.50); ctx.moveTo(x+s*w*0.10,y-h*0.48); ctx.lineTo(x+s*w*0.30,y-h*0.44); ctx.stroke(); }
+
   ctx.restore();
 }
 
@@ -387,23 +401,35 @@ function startCat(){
 }
 function stopCat(save=false){
   if(!cRun) return;
-  if(save){ const n=($('#playerName').value||'Kosmos').slice(0,16); pushRec(REC_C,n,cScore); }
   cRun=false; cancelAnimationFrame(cRAF); removeEventListener('resize',cResize);
   cCanvas?.remove(); document.body.classList.remove('playing'); $('.gamebar').style.display='none'; $('#hud').style.display='none';
 }
 
-/* управление котом — правый джойстик aimArea */
+/* управление котом — правый джойстик */
+const aimGame=$('#aimArea');
 function cJoyStart(e){const t=e.changedTouches?e.changedTouches[0]:e;if(t.clientX<innerWidth*0.45)return;cJoy.on=true;cJoy.sx=cJoy.ex=t.clientX;cJoy.sy=cJoy.ey=t.clientY;e.preventDefault?.();}
 function cJoyMove(e){for(const t of (e.changedTouches||[e])){if(!cJoy.on)continue;cJoy.ex=t.clientX;cJoy.ey=t.clientY;}}
 function cJoyEnd(){cJoy.on=false;}
-function bindCatJoy(){const aim=$('#aimArea'); on(aim,'touchstart',cJoyStart,{passive:false}); on(aim,'touchmove',cJoyMove,{passive:true}); on(aim,'touchend',cJoyEnd,{passive:true}); on(aim,'mousedown',cJoyStart); on(aim,'mousemove',cJoyMove); on(aim,'mouseup',cJoyEnd);}
+function bindCatJoy(){ on(aimGame,'touchstart',cJoyStart,{passive:false}); on(aimGame,'touchmove',cJoyMove,{passive:true}); on(aimGame,'touchend',cJoyEnd,{passive:true}); on(aimGame,'mousedown',cJoyStart); on(aimGame,'mousemove',cJoyMove); on(aimGame,'mouseup',cJoyEnd); }
 
-/* ===== кнопки запуска ===== */
+/* запуск */
 on($('#playWorm'),'click',startWorm);
 on($('#playCat'),'click',startCat);
-
-/* ===== resize ===== */
 addEventListener('resize',()=>{ if(wRun) wResize(); if(cRun) cResize(); });
+
+/* канва/иниц. */
+let wBoostArea=$('#boostArea'), wAimArea=$('#aimArea');
+function startAim(){ on(wAimArea,'touchstart',aimStart,{passive:false}); on(wAimArea,'touchmove',aimMove,{passive:true}); on(wAimArea,'touchend',aimEnd,{passive:true}); on(wAimArea,'mousedown',aimStart); on(wAimArea,'mousemove',aimMove); on(wAimArea,'mouseup',aimEnd); }
+function startBoost(){ on(wBoostArea,'touchstart',boostStart,{passive:false}); on(wBoostArea,'touchend',boostEnd,{passive:true}); on(wBoostArea,'mousedown',boostStart); on(wBoostArea,'mouseup',boostEnd); }
+
+/* ф-ции aim/boost для worm */
+let aimId=null, boostId=null;
+function aimStart(e){const t=e.changedTouches?e.changedTouches[0]:e;if(t.clientX<innerWidth*0.45)return;aimId=t.identifier??'mouse';wTouch.on=true;wTouch.sx=wTouch.ex=t.clientX;wTouch.sy=wTouch.ey=t.clientY;e.preventDefault?.();}
+function aimMove(e){for(const t of (e.changedTouches||[e])){const id=t.identifier??'mouse';if(id!==aimId)continue;wTouch.ex=t.clientX;wTouch.ey=t.clientY;}}
+function aimEnd(e){for(const t of (e.changedTouches||[e])){const id=t.identifier??'mouse';if(id===aimId){wTouch.on=false;aimId=null;}}}
+function boostStart(e){const t=e.changedTouches?e.changedTouches[0]:e;boostId=t.identifier??'mouse';wBoost=true;e.preventDefault?.();}
+function boostEnd(e){for(const t of (e.changedTouches||[e])){const id=t.identifier??'mouse';if(id===boostId){wBoost=false;boostId=null;}}}
+
 </script>
 </body>
 </html>
