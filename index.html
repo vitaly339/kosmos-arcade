@@ -3,109 +3,132 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-<title>Cosmo Arcade — Switch + Camera</title>
+<title>Cosmo Arcade — Online Worm Coop</title>
 <style>
   html,body{margin:0;height:100%;background:#0a1020;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;-webkit-user-select:none;user-select:none;touch-action:none}
   #wrap{display:flex;flex-direction:column;height:100dvh}
   header{padding:8px 12px;background:#121a36;border-bottom:1px solid #22325a;display:flex;gap:8px;align-items:center}
   header h1{font-size:16px;margin:0}
-  #ui{margin-left:auto;display:flex;gap:8px;align-items:center}
-  #score{padding:6px 10px;background:#0f1a36;border:1px solid #2b3f6f;border-radius:8px;font-weight:700}
+  #ui{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
   .hbtn{padding:6px 10px;background:#182a56;border:1px solid #3a5aa0;border-radius:8px;color:#fff;font-weight:700;cursor:pointer}
+  #score{padding:6px 10px;background:#0f1a36;border:1px solid #2b3f6f;border-radius:8px;font-weight:700;min-width:64px;text-align:center}
 
   #stage{position:relative;flex:1;min-height:0}
-  #canvas{position:absolute;inset:0;display:block;width:100%;height:100%;touch-action:none;background:#0a0e19;z-index:1}
+  #canvas{position:absolute;inset:0;display:block;width:100%;height:100%;touch-action:none;background:#070c18;z-index:1}
 
-  #menu{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(8,12,24,.85);z-index:3}
-  .card{background:#0f1730;border:1px solid #2b3f6f;border-radius:12px;padding:16px;max-width:420px;width:92%}
-  .btn{display:block;width:100%;padding:14px 16px;margin:8px 0;background:#182a56;border:1px solid #3a5aa0;border-radius:10px;color:#fff;font-weight:700;text-align:center;cursor:pointer}
+  .overlay{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(8,12,24,.85);z-index:20}
+  .card{background:#0f1730;border:1px solid #2b3f6f;border-radius:12px;padding:16px;max-width:560px;width:92%}
+  .row{display:flex;gap:8px;flex-wrap:wrap}
+  .btn{display:inline-block;padding:12px 14px;background:#182a56;border:1px solid #3a5aa0;border-radius:10px;color:#fff;font-weight:700;cursor:pointer}
+  .field{display:flex;gap:8px;align-items:center;margin:6px 0}
+  input[type="text"]{background:#0f1a36;color:#fff;border:1px solid #2b3f6f;border-radius:8px;padding:8px 10px;min-width:160px}
 
-  #touch{position:absolute;left:10px;right:10px;bottom:10px;display:flex;justify-content:space-between;gap:10px;z-index:4}
+  #touch{position:absolute;left:10px;right:10px;bottom:10px;display:flex;justify-content:space-between;gap:10px;z-index:5}
   .joy{position:relative;display:none;width:120px;height:120px;border-radius:50%;background:#0b1430cc;border:1px solid #2b3e68}
-  .joy.small{width:100px;height:100px}
   .knob{position:absolute;left:50%;top:50%;width:56px;height:56px;border-radius:50%;background:#172a58;border:1px solid #3b5ca0;transform:translate(-50%,-50%)}
-  .joy.small .knob{width:48px;height:48px}
 
-  #jumpBtn{
-    position:absolute; right:12px; bottom:130px;
-    padding:14px 18px; font-size:18px; font-weight:800; color:#fff;
-    background:#1c2f5e; border:1px solid #3b5ca0; border-radius:12px;
-    box-shadow:0 6px 18px rgba(0,0,0,.35);
-    display:none; z-index:5;
-  }
+  /* Кнопки Worm */
+  #boostBtn,#invisBtn{position:absolute;left:140px;bottom:20px;display:none;z-index:6}
+  #boostBtn{background:#0e8a6a;border-color:#33c49f}
+  #invisBtn{left:260px;background:#8a0e6a;border-color:#d658b1}
+
+  /* Cat jump */
+  #jumpBtn{position:absolute;right:12px;bottom:130px;padding:14px 18px;font-size:18px;font-weight:800;color:#fff;background:#1c2f5e;border:1px solid #3b5ca0;border-radius:12px;display:none;z-index:6}
+
+  #footer{position:absolute;left:0;right:0;bottom:2px;text-align:center;font-size:12px;opacity:.8;z-index:2;pointer-events:none}
 </style>
 </head>
 <body>
 <div id="wrap">
   <header>
     <h1>Cosmo Arcade</h1>
+    <div class="field" style="margin-left:10px">
+      <label for="playerName" style="font-size:12px;opacity:.85">Имя:</label>
+      <input id="playerName" type="text" placeholder="ваше имя" maxlength="16">
+      <button id="saveName" class="hbtn">OK</button>
+    </div>
+
     <div id="ui">
       <div id="score">0</div>
-      <button id="switchBtn" class="hbtn" title="Переключить игру">Переключить игру</button>
-      <button id="back" class="hbtn" title="В меню">В меню</button>
+      <!-- Онлайн -->
+      <div class="field">
+        <input id="roomId" type="text" placeholder="Room ID" maxlength="20">
+        <button id="createRoom" class="hbtn">Создать</button>
+        <button id="joinRoom" class="hbtn">Войти</button>
+        <button id="leaveRoom" class="hbtn">Выйти</button>
+      </div>
+      <button id="switchBtn" class="hbtn">Переключить игру</button>
+      <button id="back" class="hbtn">В меню</button>
     </div>
   </header>
 
   <div id="stage">
     <canvas id="canvas"></canvas>
 
-    <div id="menu">
+    <!-- Меню -->
+    <div id="menu" class="overlay" style="display:flex">
       <div class="card">
-        <button class="btn" data-mode="worm">🐍 Запустить Worm</button>
-        <button class="btn" data-mode="cat">🐱 Запустить Cat</button>
-        <p style="opacity:.8;font-size:12px;margin:6px 0 0 0">
-          Worm: левый джойстик поворачивает.<br>
-          Cat: правый джойстик ходит, ⤴︎ Jump и любой тап — прыжок. Камера следует вверх.
-        </p>
+        <h3 style="margin:0 0 8px 0">Выбери режим</h3>
+        <div class="row">
+          <button class="btn" data-mode="worm">🐍 Играть: Worm (онлайн-кооп доступен по Room ID)</button>
+          <button class="btn" data-mode="cat">🐱 Играть: Cat</button>
+        </div>
+        <div class="field">
+          <button id="openHow" class="btn">Как играть с другом?</button>
+        </div>
+        <div id="how" style="display:none;margin-top:8px;opacity:.9">
+          1) Один жмёт «Создать», говорит другу Room ID.<br>
+          2) Друг вводит тот же Room ID и жмёт «Войти».<br>
+          3) Оба выбирают Worm — увидите друг друга.
+        </div>
       </div>
     </div>
 
+    <!-- Управление -->
     <div id="touch">
       <div class="joy" id="joyLeft"><div class="knob"></div></div>
-      <div class="joy small" id="joyRight"><div class="knob"></div></div>
-      <button id="jumpBtn" type="button" aria-label="jump">⤴︎ Jump</button>
+      <button id="jumpBtn" class="btn" aria-label="jump">⤴︎ Jump</button>
+      <button id="boostBtn" class="btn">Boost</button>
+      <button id="invisBtn" class="btn">Невидимка</button>
     </div>
+
+    <div id="footer">made by kosmos.bud 2k25</div>
   </div>
 </div>
 
+<!-- Firebase (compat) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="./firebase-config.js"></script>
+
 <script>
-/* отключим старый SW (кэш) */
-(function(){try{
-  if ('serviceWorker' in navigator && navigator.serviceWorker.getRegistrations) {
-    navigator.serviceWorker.getRegistrations().then(function(rs){ rs.forEach(function(r){ r.unregister(); }); });
-  }
-}catch(e){} })();
+/* ===== Firebase init ===== */
+var app = firebase.initializeApp(window.FB_CONFIG);
+var db  = firebase.database();
 
-/* DOM */
-var canvas = document.getElementById('canvas');
-var ctx = canvas.getContext('2d');
-var menu = document.getElementById('menu');
-var scoreEl = document.getElementById('score');
-var joyLeftEl  = document.getElementById('joyLeft');
-var joyRightEl = document.getElementById('joyRight');
-var jumpBtn    = document.getElementById('jumpBtn');
-var switchBtn  = document.getElementById('switchBtn');
-var backBtn    = document.getElementById('back');
-
+/* ===== Базовая сцена ===== */
+var canvas = document.getElementById('canvas'), ctx = canvas.getContext('2d');
 function resize(){
-  var r = Math.max(1, Math.min(window.devicePixelRatio || 1, 3));
-  var w = canvas.parentElement.clientWidth;
-  var h = canvas.parentElement.clientHeight;
-  canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
-  canvas.width = Math.floor(w*r); canvas.height = Math.floor(h*r);
+  var r = Math.max(1, Math.min(window.devicePixelRatio||1, 3));
+  var w = canvas.parentElement.clientWidth, h = canvas.parentElement.clientHeight;
+  canvas.style.width=w+'px'; canvas.style.height=h+'px';
+  canvas.width=Math.floor(w*r); canvas.height=Math.floor(h*r);
   ctx.setTransform(r,0,0,r,0,0);
 }
-window.addEventListener('resize', resize); resize();
+addEventListener('resize', resize); resize();
 
 var state='menu', score=0;
+var scoreEl=document.getElementById('score');
 function setScore(v){ score=v|0; scoreEl.textContent=score; }
-function showControls(mode){
-  joyLeftEl.style.display  = (mode==='worm') ? 'block' : 'none';
-  joyRightEl.style.display = (mode==='cat')  ? 'block' : 'none';
-  jumpBtn.style.display    = (mode==='cat')  ? 'block' : 'none';
-}
+
+/* ===== UI ===== */
+var menu = document.getElementById('menu');
 function showMenu(){ state='menu'; menu.style.display='flex'; showControls('none'); }
 function hideMenu(){ menu.style.display='none'; }
+document.getElementById('openHow').onclick = function(){
+  var el = document.getElementById('how'); el.style.display = el.style.display? '' : 'block';
+};
+
 document.querySelectorAll('[data-mode]').forEach(function(b){
   b.addEventListener('click', function(){
     var m = this.getAttribute('data-mode');
@@ -114,43 +137,92 @@ document.querySelectorAll('[data-mode]').forEach(function(b){
     hideMenu();
   });
 });
-backBtn.addEventListener('click', showMenu);
-
-/* КНОПКА ПЕРЕКЛЮЧЕНИЯ ИГРЫ — мгновенно меняет режим */
-switchBtn.addEventListener('click', function(){
+document.getElementById('back').onclick = showMenu;
+document.getElementById('switchBtn').onclick = function(){
   if (state==='worm'){ startCat(); state='cat'; showControls('cat'); }
   else if (state==='cat'){ startWorm(); state='worm'; showControls('worm'); }
-});
+};
 
-/* Джойстик (ES5) */
+/* Имя */
+var nameInput = document.getElementById('playerName'), saveNameBtn=document.getElementById('saveName');
+var playerName = localStorage.getItem('playerName') || 'Player';
+nameInput.value = playerName;
+saveNameBtn.onclick = function(){ playerName=(nameInput.value||'Player').slice(0,16); localStorage.setItem('playerName',playerName); };
+
+/* ===== Онлайн (комната) ===== */
+var roomIdEl=document.getElementById('roomId');
+var createBtn=document.getElementById('createRoom'), joinBtn=document.getElementById('joinRoom'), leaveBtn=document.getElementById('leaveRoom');
+
+var roomId=null, playerId=null, roomRef=null, meRef=null, peersRef=null, peersSub=null, presenceRef=null;
+
+function randId(n){ var s=''; var abc='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; for(var i=0;i<n;i++) s+=abc[Math.floor(Math.random()*abc.length)]; return s; }
+
+createBtn.onclick = function(){
+  roomId = roomIdEl.value.trim() || randId(6);
+  roomIdEl.value = roomId;
+  connectRoom(roomId, true);
+};
+joinBtn.onclick = function(){
+  var id = roomIdEl.value.trim();
+  if (!id){ alert('Введите Room ID'); return; }
+  roomId = id; connectRoom(roomId, false);
+};
+leaveBtn.onclick = disconnectRoom;
+
+function connectRoom(id, create){
+  playerId = playerId || randId(8);
+  roomRef = db.ref('rooms/'+id);
+  meRef   = roomRef.child('players/'+playerId);
+  peersRef= roomRef.child('players');
+
+  // пометим своё присутствие и очистку на выход
+  meRef.onDisconnect().remove();
+  roomRef.child('updated').set(firebase.database.ServerValue.TIMESTAMP);
+
+  // подписка на других игроков
+  if (peersSub) peersRef.off('value', peersSub);
+  peersSub = function(snap){ var all=snap.val()||{}; updatePeers(all); };
+  peersRef.on('value', peersSub);
+
+  alert('Подключено к комнате '+id+'. Сообщите Room ID другу.');
+}
+function disconnectRoom(){
+  try{ if (meRef) meRef.remove(); }catch(e){}
+  if (peersRef && peersSub) peersRef.off('value', peersSub);
+  roomId=null; playerId=null; roomRef=meRef=peersRef=null; peersSub=null;
+}
+
+/* ===== Джойстики/кнопки ===== */
+var joyLeftEl=document.getElementById('joyLeft');
+var jumpBtn=document.getElementById('jumpBtn'), boostBtn=document.getElementById('boostBtn'), invisBtn=document.getElementById('invisBtn');
+
+function showControls(mode){
+  joyLeftEl.style.display  = (mode==='worm') ? 'block' : 'none';
+  jumpBtn.style.display    = (mode==='cat')  ? 'block' : 'none';
+  boostBtn.style.display   = (mode==='worm') ? 'inline-block' : 'none';
+  invisBtn.style.display   = (mode==='worm') ? 'inline-block' : 'none';
+}
+
 function makeJoystick(root, radius){
   var knob = root.querySelector('.knob');
   var st = {ax:0, ay:0, active:false};
   var rect=null, id=null;
   function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
   function setKnob(ax,ay){
-    knob.style.left = (50 + clamp(ax,-1,1)*50) + '%';
-    knob.style.top  = (50 + clamp(ay,-1,1)*50) + '%';
-    knob.style.transform = 'translate(-50%,-50%)';
+    knob.style.left=(50+clamp(ax,-1,1)*50)+'%';
+    knob.style.top =(50+clamp(ay,-1,1)*50)+'%';
+    knob.style.transform='translate(-50%,-50%)';
   }
   function reset(){ st.ax=0; st.ay=0; st.active=false; setKnob(0,0); }
-  function startXY(x,y,pid){
-    id = pid; rect = root.getBoundingClientRect(); st.active = true;
-    var cx = rect.left + rect.width/2, cy = rect.top + rect.height/2;
-    st.ax = clamp((x-cx)/radius,-1,1);
-    st.ay = clamp((y-cy)/radius,-1,1);
-    setKnob(st.ax, st.ay);
+  function startXY(x,y,pid){ id=pid; rect=root.getBoundingClientRect(); st.active=true;
+    var cx=rect.left+rect.width/2, cy=rect.top+rect.height/2;
+    st.ax = clamp((x-cx)/radius,-1,1); st.ay = clamp((y-cy)/radius,-1,1); setKnob(st.ax,st.ay);
   }
-  function moveXY(x,y){
-    if (!st.active) return;
-    var cx = rect.left + rect.width/2, cy = rect.top + rect.height/2;
-    st.ax = clamp((x-cx)/radius,-1,1);
-    st.ay = clamp((y-cy)/radius,-1,1);
-    setKnob(st.ax, st.ay);
+  function moveXY(x,y){ if(!st.active) return; var cx=rect.left+rect.width/2, cy=rect.top+rect.height/2;
+    st.ax = clamp((x-cx)/radius,-1,1); st.ay = clamp((y-cy)/radius,-1,1); setKnob(st.ax,st.ay);
   }
   function endXY(){ reset(); }
-
-  root.addEventListener('pointerdown', function(e){ e.preventDefault(); if (root.setPointerCapture) root.setPointerCapture(e.pointerId); startXY(e.clientX,e.clientY,e.pointerId); }, {passive:false});
+  root.addEventListener('pointerdown', function(e){ e.preventDefault(); if(root.setPointerCapture) root.setPointerCapture(e.pointerId); startXY(e.clientX,e.clientY,e.pointerId); }, {passive:false});
   root.addEventListener('pointermove',  function(e){ if(e.pointerId!==id) return; moveXY(e.clientX,e.clientY); });
   root.addEventListener('pointerup',    function(e){ if(e.pointerId!==id) return; endXY(); });
   root.addEventListener('pointercancel',function(){ endXY(); });
@@ -158,93 +230,203 @@ function makeJoystick(root, radius){
   root.addEventListener('touchstart', function(e){ e.preventDefault(); var t=e.changedTouches[0]; startXY(t.clientX,t.clientY,'t'); }, {passive:false});
   root.addEventListener('touchmove',  function(e){ e.preventDefault(); var t=e.changedTouches[0]; moveXY(t.clientX,t.clientY); }, {passive:false});
   root.addEventListener('touchend',   function(e){ e.preventDefault(); endXY(); }, {passive:false});
-
-  setKnob(0,0);
-  return st;
+  setKnob(0,0); return st;
 }
-var joyLeft  = makeJoystick(joyLeftEl, 50); // Worm
-var joyRight = makeJoystick(joyRightEl, 40); // Cat
+var joyLeft=makeJoystick(joyLeftEl,50);
 
-/* ===== WORM (минимал) ===== */
-var worm=null, foods=[];
+/* ===== WORM (онлайн-кооп) ===== */
+var worm=null, foods=[], bombs=[];
+var boostHold=false, boostMul=1.6;
+var invis=false, invisTimer=0;
+
+// визуальный кэш для других игроков
+var peers = {}; // {playerId: {name, x,y, ang, t:[{x,y}..], ts}}
+function updatePeers(all){
+  // убираем себя и мёртвых, формируем кэш
+  var now=Date.now();
+  var me = playerId;
+  var next = {};
+  for (var pid in all){
+    if (pid===me) continue;
+    var p = all[pid];
+    next[pid] = peers[pid] || {t:[]};
+    next[pid].name = p.name || 'Player';
+    next[pid].x = p.x; next[pid].y = p.y; next[pid].ang = p.ang || 0;
+    next[pid].ts = p.ts || now;
+    // простая «тень-тропа»
+    next[pid].t.unshift({x:p.x,y:p.y}); if (next[pid].t.length>400) next[pid].t.pop();
+  }
+  peers = next;
+}
+
 function startWorm(){
   setScore(0);
-  var W=canvas.clientWidth, H=canvas.clientHeight;
-  worm={x:W/2,y:H/2, ang:-Math.PI/2, spd:Math.min(W,H)*0.19, trail:[], segs:14, step:4};
-  foods=[]; var n=Math.round((W*H)/9000);
-  for(var i=0;i<n;i++) foods.push({x:Math.random()*W, y:Math.random()*H});
-}
-function updateWorm(dt){
-  if (joyLeft.active){ worm.ang = Math.atan2(joyLeft.ay, joyLeft.ax); }
-  worm.x += Math.cos(worm.ang)*worm.spd*dt;
-  worm.y += Math.sin(worm.ang)*worm.spd*dt;
+  foods=[]; bombs=[];
   var W=canvas.clientWidth,H=canvas.clientHeight;
-  if (worm.x<0) worm.x+=W; if (worm.x>W) worm.x-=W;
-  if (worm.y<0) worm.y+=H; if (worm.y>H) worm.y-=H;
-  worm.trail.unshift({x:worm.x,y:worm.y}); if (worm.trail.length>1400) worm.trail.pop();
-  for (var i=foods.length-1;i>=0;i--){
-    var f=foods[i]; var dx=f.x-worm.x, dy=f.y-worm.y;
-    if (Math.sqrt(dx*dx+dy*dy)<12){ foods.splice(i,1); setScore(score+5); foods.push({x:Math.random()*W,y:Math.random()*H}); }
-  }
-}
-function drawWorm(){
-  var W=canvas.clientWidth,H=canvas.clientHeight;
-  ctx.fillStyle='#0a0e19'; ctx.fillRect(0,0,W,H);
-  ctx.fillStyle='#67c8ff'; for (var i=0;i<foods.length;i++){ var f=foods[i]; ctx.beginPath(); ctx.arc(f.x,f.y,3.5,0,Math.PI*2); ctx.fill(); }
-  for (var s=0;s<worm.segs;s++){
-    var p = worm.trail[s*worm.step] || worm, r=Math.max(3,9-s*0.08);
-    var hue=(s*14+(Date.now()/40)%360)%360;
-    ctx.fillStyle='hsl('+hue+' 90% 55%)';
-    ctx.beginPath(); ctx.arc(p.x,p.y,r,0,Math.PI*2); ctx.fill();
-  }
+  worm={x:W*0.5,y:H*0.5, ang:-Math.PI/2, spd:Math.min(W,H)*0.19, trail:[], segs:16, step:4, alive:true};
+  var nf = Math.round((W*H)/9000);
+  for (var i=0;i<nf;i++){ spawnFruit(); }
+  var nb = Math.max(2, Math.round((W*H)/60000));
+  for (i=0;i<nb;i++){ spawnBomb(); }
 }
 
-/* ===== CAT — камера вверх + сильный прыжок ===== */
+function spawnFruit(){
+  var W=canvas.clientWidth,H=canvas.clientHeight;
+  var colors=['#ff6b6b','#ffd166','#c084fc','#7dd3fc'];
+  var pts=[5,7,9,12];
+  var k=Math.floor(Math.random()*colors.length);
+  foods.push({x:Math.random()*W, y:Math.random()*H, r:3.5, color:colors[k], score:pts[k]});
+}
+function spawnBomb(){
+  var W=canvas.clientWidth,H=canvas.clientHeight;
+  bombs.push({x:Math.random()*W, y:Math.random()*H, r:8});
+}
+
+function updateWorm(dt){
+  var W=canvas.clientWidth,H=canvas.clientHeight;
+  if (joyLeft.active){ worm.ang=Math.atan2(joyLeft.ay, joyLeft.ax); }
+  var spd = worm.spd * (boostHold?boostMul:1);
+  worm.x += Math.cos(worm.ang)*spd*dt;
+  worm.y += Math.sin(worm.ang)*spd*dt;
+  wrap(worm,W,H);
+  worm.trail.unshift({x:worm.x,y:worm.y}); if (worm.trail.length>1600) worm.trail.pop();
+
+  // еда
+  for (var i=foods.length-1;i>=0;i--){
+    var f=foods[i];
+    if (dist(worm.x,worm.y,f.x,f.y) < 12){ foods.splice(i,1); setScore(score+f.score); spawnFruit(); }
+  }
+  // бомбы
+  for (i=bombs.length-1;i>=0;i--){
+    var b=bombs[i];
+    if (!invis && dist(worm.x,worm.y,b.x,b.y) < 12){
+      // смерть → просто рестарт (для примера)
+      saveRecord(playerName, score);
+      startWorm();
+      break;
+    }
+  }
+
+  // невидимка
+  if (invis){ invisTimer-=dt; if (invisTimer<=0){ invis=false; } }
+
+  // публикуем своё состояние в комнату (~15 Гц)
+  publishTimer -= dt;
+  if (roomId && playerId && publishTimer<=0){
+    publishTimer = 1/15;
+    meRef && meRef.set({
+      name: playerName,
+      x: Math.round(worm.x*100)/100,
+      y: Math.round(worm.y*100)/100,
+      ang: Math.round(worm.ang*1000)/1000,
+      ts: firebase.database.ServerValue.TIMESTAMP
+    });
+  }
+}
+var publishTimer = 0;
+
+function drawWorm(){
+  var W=canvas.clientWidth,H=canvas.clientHeight;
+  ctx.fillStyle='#071122'; ctx.fillRect(0,0,W,H);
+
+  // фрукты
+  for (var i=0;i<foods.length;i++){
+    var f=foods[i]; ctx.fillStyle=f.color; ctx.beginPath(); ctx.arc(f.x,f.y,f.r,0,Math.PI*2); ctx.fill();
+  }
+  // бомбы
+  for (i=0;i<bombs.length;i++){
+    var b=bombs[i]; ctx.fillStyle='#111'; ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#ff5252'; ctx.beginPath(); ctx.arc(b.x,b.y,3,0,Math.PI*2); ctx.fill();
+  }
+
+  // моя змейка (радужная)
+  drawSnake(worm, true, playerName);
+
+  // другие игроки
+  for (var pid in peers){
+    drawPeerSnake(peers[pid]);
+  }
+
+  // статус
+  ctx.fillStyle='rgba(255,255,255,.85)'; ctx.font='12px system-ui';
+  if (boostHold) ctx.fillText('BOOST', 12, 16);
+  if (invis)     ctx.fillText('INVIS '+Math.ceil(invisTimer)+'s', 12, 32);
+}
+
+function drawSnake(snk, main, name){
+  for (var i=0;i<snk.segs;i++){
+    var p = snk.trail[i*snk.step] || snk;
+    var r = Math.max(3.2, 9.5 - i*0.08);
+    var hue = (i*14 + (Date.now()/40)%360) % 360;
+    ctx.beginPath();
+    ctx.fillStyle = main ? ('hsl('+hue+' 90% 55%)') : '#90f';
+    ctx.arc(p.x,p.y,r,0,Math.PI*2); ctx.fill();
+  }
+  if (name){
+    ctx.fillStyle='rgba(255,255,255,.9)';
+    ctx.font='11px system-ui';
+    ctx.textAlign='center';
+    ctx.fillText(name, snk.x, snk.y - 16);
+  }
+}
+function drawPeerSnake(pr){
+  // рисуем «тень» из точек t
+  var t = pr.t || [];
+  for (var i=0;i<Math.min(16, t.length); i++){
+    var p = t[i];
+    var r = Math.max(3.2, 9.5 - i*0.08);
+    ctx.beginPath(); ctx.fillStyle='#9b8cff'; ctx.arc(p.x,p.y,r,0,Math.PI*2); ctx.fill();
+  }
+  // головной маркер
+  ctx.beginPath(); ctx.fillStyle='#e6d5ff'; ctx.arc(pr.x, pr.y, 5, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,.9)'; ctx.font='11px system-ui'; ctx.textAlign='center';
+  ctx.fillText(pr.name||'Player', pr.x, pr.y - 16);
+}
+
+function wrap(o,W,H){ if (o.x<0) o.x+=W; if (o.x>W) o.x-=W; if (o.y<0) o.y+=H; if (o.y>H) o.y-=H; }
+function dist(ax,ay,bx,by){ var dx=ax-bx, dy=ay-by; return Math.sqrt(dx*dx+dy*dy); }
+
+/* Boost & Invis */
+document.getElementById('boostBtn').addEventListener('pointerdown', function(e){ e.preventDefault(); if(state==='worm') boostHold=true; }, {passive:false});
+document.getElementById('boostBtn').addEventListener('pointerup',   function(){ boostHold=false; });
+document.getElementById('boostBtn').addEventListener('pointercancel',function(){ boostHold=false; });
+document.getElementById('boostBtn').addEventListener('touchstart', function(e){ e.preventDefault(); if(state==='worm') boostHold=true; }, {passive:false});
+document.getElementById('boostBtn').addEventListener('touchend',   function(){ boostHold=false; }, {passive:false});
+
+document.getElementById('invisBtn').addEventListener('click', function(){
+  if (state!=='worm') return;
+  if (!invis){ invis=true; invisTimer=10; }
+});
+
+/* ===== CAT (как прежде, оффлайн) ===== */
 var CAT_G=1400, CAT_JUMP=-760, CAT_BOUNCE=-800, CAT_SPEED=240, CAT_GAP_MIN=140, CAT_GAP_MAX=170;
 var cat=null, tramps=[], camY=0, jumpRequest=false, airJump=true, minCamY=0;
+var jumpBtnEl=document.getElementById('jumpBtn');
+jumpBtnEl.addEventListener('pointerdown', function(e){ e.preventDefault(); if(state==='cat') jumpRequest=true; }, {passive:false});
+jumpBtnEl.addEventListener('touchstart',  function(e){ e.preventDefault(); if(state==='cat') jumpRequest=true; }, {passive:false});
+canvas.addEventListener('pointerdown', function(){ if(state==='cat') jumpRequest=true; }, {passive:false});
+canvas.addEventListener('touchstart',  function(e){ if(state==='cat'){ e.preventDefault(); jumpRequest=true; } }, {passive:false});
 
 function startCat(){
   setScore(0); jumpRequest=false; airJump=true;
   var W=canvas.clientWidth, H=canvas.clientHeight;
   cat={x:W/2,y:H*0.6,vx:0,vy:0,onGround:false};
-  camY = cat.y - H*0.35;           // стартовый кадр
-  minCamY = camY;                  // камера может двигаться только вверх (в меньшую Y)
-  tramps=[]; 
-  for (var i=0;i<14;i++) addTramp(i===0? (cat.y+40) : null); // первая платформа под котом
+  camY = cat.y - H*0.35; minCamY = camY; tramps=[];
+  for (var i=0;i<14;i++) addTrampCat(i===0? (cat.y+40) : null);
+  showControls('cat');
 }
-
-function addTramp(constY){
+function addTrampCat(constY){
   var W=canvas.clientWidth;
   var gap = CAT_GAP_MIN + Math.random()*(CAT_GAP_MAX-CAT_GAP_MIN);
   var newY = (typeof constY==='number') ? constY : (tramps.length ? tramps[tramps.length-1].y - gap : camY + 200);
   var x = 60 + Math.random()*(W-120);
   tramps.push({x:x, y:newY, w:Math.max(120, Math.min(220, W*0.3)), h:18});
 }
-
-/* прыжок — только в режиме cat (чтобы меню не ломать) */
-function requestJump(){ if (state==='cat') jumpRequest = true; }
-['pointerdown','mousedown'].forEach(function(evt){
-  canvas.addEventListener(evt, function(){ if(state==='cat'){ requestJump(); } }, {passive:false});
-});
-['touchstart'].forEach(function(evt){
-  canvas.addEventListener(evt, function(e){ if(state==='cat'){ e.preventDefault(); requestJump(); } }, {passive:false});
-});
-jumpBtn.addEventListener('pointerdown', function(e){ e.preventDefault(); requestJump(); }, {passive:false});
-jumpBtn.addEventListener('touchstart',  function(e){ e.preventDefault(); requestJump(); }, {passive:false});
-
 function updateCat(dt){
   var W=canvas.clientWidth, H=canvas.clientHeight;
-
-  // ходьба
-  var move = joyRight.ax; cat.vx = move * CAT_SPEED;
-
-  // физика
-  cat.vy += CAT_G * dt;
-  cat.x  += cat.vx * dt;
-  cat.y  += cat.vy * dt;
+  var move = joyLeft.ax; cat.vx = move * CAT_SPEED; // используем левый джойстик для Cat здесь — так проще
+  cat.vy += CAT_G * dt; cat.x += cat.vx*dt; cat.y += cat.vy*dt;
   cat.x = Math.max(16, Math.min(W-16, cat.x));
-
-  // платформы (приземление)
   cat.onGround=false;
   for (var i=0;i<tramps.length;i++){
     var t=tramps[i];
@@ -252,57 +434,29 @@ function updateCat(dt){
       cat.y=t.y-12; cat.vy=CAT_BOUNCE; cat.onGround=true; airJump=true; setScore(score+1);
     }
   }
-
-  // прыжок
   if (jumpRequest){
-    if (cat.onGround || airJump){
-      cat.vy = CAT_JUMP;
-      if (!cat.onGround) airJump=false;
-    }
+    if (cat.onGround || airJump){ cat.vy = CAT_JUMP; if (!cat.onGround) airJump=false; }
     jumpRequest=false;
   }
-
-  // КАМЕРА: целевая позиция — держать кота на 35% от верха
   var desired = cat.y - H*0.35;
-  if (desired < minCamY) minCamY = desired;           // запоминаем самый верх
-  // сглаженно тянем камеру только вверх
-  if (minCamY < camY){
-    camY += (minCamY - camY) * Math.min(1, dt*6);     // lerp
-    if (Math.abs(minCamY - camY) < 0.5) camY = minCamY;
-  }
-
-  // СПАВН: гарантируем платформы выше экрана
+  if (desired < minCamY) minCamY = desired;
+  if (minCamY < camY){ camY += (minCamY - camY) * Math.min(1, dt*6); if (Math.abs(minCamY-camY)<0.5) camY=minCamY; }
   var topY = tramps.length ? tramps[0].y : camY + 200;
   for (i=1;i<tramps.length;i++) if (tramps[i].y < topY) topY = tramps[i].y;
-  while (topY > camY - H*0.8 && tramps.length < 60){    // докладываем вверх
-    addTramp(topY - (CAT_GAP_MIN + Math.random()*(CAT_GAP_MAX-CAT_GAP_MIN)));
-    // обновим topY
+  while (topY > camY - H*0.8 && tramps.length < 60){
+    addTrampCat(topY - (CAT_GAP_MIN + Math.random()*(CAT_GAP_MAX-CAT_GAP_MIN)));
     topY = tramps[0].y; for (i=1;i<tramps.length;i++) if (tramps[i].y < topY) topY = tramps[i].y;
   }
-
-  // Очистка: всё, что сильно ниже низа экрана — в утиль
-  for (i=tramps.length-1;i>=0;i--){
-    if (tramps[i].y > camY + H + 200){ tramps.splice(i,1); }
-  }
-
-  // фейл: упал слишком низко
-  if (cat.y > camY + H + 240){ showMenu(); }
+  for (i=tramps.length-1;i>=0;i--) if (tramps[i].y > camY + H + 200) tramps.splice(i,1);
+  if (cat.y > camY + H + 240) showMenu();
 }
-
 function drawCat(){
   var W=canvas.clientWidth,H=canvas.clientHeight;
   ctx.fillStyle='#0a0e19'; ctx.fillRect(0,0,W,H);
-  // платформы с учётом камеры
   ctx.fillStyle='#80ffd8'; ctx.strokeStyle='rgba(0,0,0,.25)'; ctx.lineWidth=1;
-  for (var i=0;i<tramps.length;i++){
-    var t=tramps[i]; roundRect(t.x, t.y - camY, t.w, t.h, 10); ctx.fill(); ctx.stroke();
-  }
-  // кот
+  for (var i=0;i<tramps.length;i++){ var t=tramps[i]; roundRect(t.x, t.y - camY, t.w, t.h, 10); ctx.fill(); ctx.stroke(); }
   drawCatSprite(cat.x, cat.y - camY);
 }
-
-/* Утилиты */
-function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
 function drawCatSprite(x,y){
   ctx.save(); ctx.translate(x,y);
   ctx.fillStyle='rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(0,16,14,6,0,0,Math.PI*2); ctx.fill();
@@ -315,15 +469,17 @@ function drawCatSprite(x,y){
   ctx.restore();
 }
 
-/* Главный цикл */
+/* Рисование и утилиты */
+function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+
+/* ===== Главный цикл ===== */
 var last = Date.now(), paused=false;
 function loop(){
-  var now = Date.now();
-  var dt = Math.min(33, now-last)/1000; last = now;
+  var now=Date.now(), dt=Math.min(33, now-last)/1000; last=now;
   if (!paused){
     if (state==='worm'){ updateWorm(dt); drawWorm(); }
     else if (state==='cat'){ updateCat(dt); drawCat(); }
-    else { ctx.fillStyle='#0a0e19'; ctx.fillRect(0,0,canvas.clientWidth,canvas.clientHeight); }
+    else { ctx.fillStyle='#070c18'; ctx.fillRect(0,0,canvas.clientWidth,canvas.clientHeight); }
   }
   requestAnimationFrame(loop);
 }
@@ -331,7 +487,12 @@ requestAnimationFrame(loop);
 document.addEventListener('visibilitychange', function(){ paused=document.hidden; });
 
 /* старт */
-showMenu();
+function showControls(mode){ /* реализовано выше */ }
+function wrapStart(){ showMenu(); showControls('none'); }
+wrapStart();
+
+/* helpers */
+function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
 </script>
 </body>
 </html>
